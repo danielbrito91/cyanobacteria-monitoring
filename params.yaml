@@ -1,0 +1,77 @@
+base:
+  random_state: 42
+  log_level: INFO
+
+data_create:
+  # Parametros para criar o dataset
+  buffer_metros: 75
+  delta_dias: 2
+  latitude: -30.012175
+  longitude: -51.215679
+  nome_eta: "MOINHOS DE VENTO"
+  municipio: "PORTO ALEGRE"
+  manancial: "GUAIBA"
+  url: "https://sage.saude.gov.br/dados/sisagua/controle_mensal_demais_parametros.zip"
+
+data_load:
+  s2a_df: "data/raw/gee.csv"
+  labels_download: "data/raw/controle_mensal_demais_parametros.zip"
+  labels_df: "data/raw/vigi.csv"
+  labeled_df: "data/raw/labeled_data.csv"
+
+data_split:
+  trainset_path: "data/processed/train.csv"
+  testset_path: "data/processed/test.csv"
+  years_split_test: 1
+
+featurize:
+  target_column: "Resultado"
+  selected_clean_columns: [
+        'date',
+        'NDVI_median',
+        'NDCI_median',
+        'B1_median',
+        'B2_median', 
+        'B3_median', 
+        'B4_median',
+        'B5_median',
+        'B6_median',
+        'B7_median',
+        'B8_median',
+        'B8A_median',
+        'B9_median',
+        'B11_median',
+        'B12_median'
+        ]
+  selected_features: ["B3_B4", "NDVI_median", "B5_B4", "NDCI_median", "B5B3_B2", "B5_B2"]
+  poly_degree: 3
+
+train:
+  estimator_name: ridge
+  estimators:
+    ridge:
+      params:
+        alpha: 30
+    xgboost:
+      params:
+        n_estimators: 1000
+        learning_rate: 0.5
+        max_depth: 16
+        subsample: 0.8
+        colsample_bytree: 0.9
+        colsample_bylevel: 0.4
+        scale_pos_weight: 85
+    random_forest:
+      params:
+        max_features: "sqrt"
+        min_samples_leaf: 1
+        n_estimators: 615
+        criterion: "absolute_error"
+  model_path: "models/model.joblib"
+  full_model_path: "models/full_model.joblib"
+
+evaluate:
+  metrics_file: "reports/metrics.json"
+  metrics_data: "reports/metrics.csv"
+  predicted_vs_fitted_plot: "reports/predicted_vs_fitted_plot.png"
+  final_predictions_file: "data/predictions/predicted.csv"
