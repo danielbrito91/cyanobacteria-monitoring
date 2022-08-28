@@ -1,0 +1,430 @@
+schema: '2.0'
+stages:
+  data_load:
+    cmd: python src/stages/data_load.py --config=params.yaml
+    deps:
+    - path: src/data/load_vigilancia.py
+      md5: 10d3630c09f56bfeaf4070dc3cee1d26
+      size: 1075
+    - path: src/data/make_s2a_dataset.py
+      md5: 372daa46d995a24d7b57bde3c6d1f5ab
+      size: 5253
+    - path: src/stages/data_load.py
+      md5: a5d6ec5be845612fcdf5d08b2beb2ff1
+      size: 1063
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_load:
+          s2a_df: data/raw/gee.csv
+          labels_download: data/raw/controle_mensal_demais_parametros.zip
+          labels_df: data/raw/vigi.csv
+          labeled_df: data/raw/labeled_data.csv
+    outs:
+    - path: data/raw/gee.csv
+      md5: 824bbb3ac5f5c18b2b3567637af524f3
+      size: 566233
+    - path: data/raw/vigi.csv
+      md5: 8392e8b0a441178b1c2f442aca8b2f44
+      size: 1528947
+  data_label:
+    cmd: python src/stages/data_label.py --config=params.yaml
+    deps:
+    - path: data/raw/gee.csv
+      md5: 824bbb3ac5f5c18b2b3567637af524f3
+      size: 566233
+    - path: data/raw/vigi.csv
+      md5: 8392e8b0a441178b1c2f442aca8b2f44
+      size: 1528947
+    - path: src/stages/data_label.py
+      md5: ccf748b2f3ec48c8e496ce681c5a35a2
+      size: 1430
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_create:
+          buffer_metros: 75
+          delta_dias: 2
+          latitude: -30.012175
+          longitude: -51.215679
+          nome_eta: MOINHOS DE VENTO
+          municipio: PORTO ALEGRE
+          manancial: GUAIBA
+          url: https://sage.saude.gov.br/dados/sisagua/controle_mensal_demais_parametros.zip
+        data_load:
+          s2a_df: data/raw/gee.csv
+          labels_download: data/raw/controle_mensal_demais_parametros.zip
+          labels_df: data/raw/vigi.csv
+          labeled_df: data/raw/labeled_data.csv
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
+    outs:
+    - path: data/raw/labeled_data.csv
+      md5: 1f11a8310a855e557bc502279a98ce8c
+      size: 11211
+  data_split:
+    cmd: python src/stages/data_split.py --config=params.yaml
+    deps:
+    - path: data/raw/labeled_data.csv
+      md5: 1f11a8310a855e557bc502279a98ce8c
+      size: 11211
+    - path: src/stages/data_split.py
+      md5: 7583104f8999af021b47768e4652042b
+      size: 1650
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_load:
+          s2a_df: data/raw/gee.csv
+          labels_download: data/raw/controle_mensal_demais_parametros.zip
+          labels_df: data/raw/vigi.csv
+          labeled_df: data/raw/labeled_data.csv
+        data_split:
+          trainset_path: data/processed/train.csv
+          testset_path: data/processed/test.csv
+          years_split_test: 1
+    outs:
+    - path: data/processed/test.csv
+      md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
+      size: 4039
+    - path: data/processed/train.csv
+      md5: 443a361261876b3cf093c9d433d246aa
+      size: 17663
+  train:
+    cmd: python src/stages/train.py --config=params.yaml
+    deps:
+    - path: data/processed/test.csv
+      md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
+      size: 4039
+    - path: data/processed/train.csv
+      md5: 443a361261876b3cf093c9d433d246aa
+      size: 17663
+    - path: src/stages/train.py
+      md5: dac38ac674b83647818292413b42a530
+      size: 1537
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_split:
+          trainset_path: data/processed/train.csv
+          testset_path: data/processed/test.csv
+          years_split_test: 1
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
+        train:
+          estimator_name: ridge
+          estimators:
+            ridge:
+              params:
+                alpha: 30
+            xgboost:
+              params:
+                n_estimators: 1000
+                learning_rate: 0.5
+                max_depth: 16
+                subsample: 0.8
+                colsample_bytree: 0.9
+                colsample_bylevel: 0.4
+                scale_pos_weight: 85
+            random_forest:
+              params:
+                max_features: sqrt
+                min_samples_leaf: 1
+                n_estimators: 615
+                criterion: absolute_error
+          model_path: models/model.joblib
+          full_model_path: models/full_model.joblib
+    outs:
+    - path: models/model.joblib
+      md5: 30c5c3f19e0df5b8a9018fcec2324f12
+      size: 2972
+  evaluate:
+    cmd: python src/stages/evaluate.py --config=params.yaml
+    deps:
+    - path: data/processed/test.csv
+      md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
+      size: 4039
+    - path: models/model.joblib
+      md5: 30c5c3f19e0df5b8a9018fcec2324f12
+      size: 2972
+    - path: src/stages/evaluate.py
+      md5: c51090d25061dd107da2457cb8afcee9
+      size: 2455
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_split:
+          trainset_path: data/processed/train.csv
+          testset_path: data/processed/test.csv
+          years_split_test: 1
+        evaluate:
+          metrics_file: reports/metrics.json
+          metrics_data: reports/metrics.csv
+          predicted_vs_fitted_plot: reports/predicted_vs_fitted_plot.png
+          final_predictions_file: data/predictions/predicted.csv
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
+        train:
+          estimator_name: ridge
+          estimators:
+            ridge:
+              params:
+                alpha: 30
+            xgboost:
+              params:
+                n_estimators: 1000
+                learning_rate: 0.5
+                max_depth: 16
+                subsample: 0.8
+                colsample_bytree: 0.9
+                colsample_bylevel: 0.4
+                scale_pos_weight: 85
+            random_forest:
+              params:
+                max_features: sqrt
+                min_samples_leaf: 1
+                n_estimators: 615
+                criterion: absolute_error
+          model_path: models/model.joblib
+          full_model_path: models/full_model.joblib
+    outs:
+    - path: reports/metrics.csv
+      md5: 82073f072430108bad42abd7a3bc690f
+      size: 1192
+    - path: reports/metrics.json
+      md5: 532ed00d5dea36444ad3412adc55a141
+      size: 26
+    - path: reports/predicted_vs_fitted_plot.png
+      md5: f635fcb7b190148148f842a8c236c79e
+      size: 31367
+  train_full_data:
+    cmd: python src/stages/train_full_data.py --config=params.yaml
+    deps:
+    - path: src/stages/train_full_data.py
+      md5: f253cdefdc8190af38c40ab22677a679
+      size: 1643
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_load:
+          s2a_df: data/raw/gee.csv
+          labels_download: data/raw/controle_mensal_demais_parametros.zip
+          labels_df: data/raw/vigi.csv
+          labeled_df: data/raw/labeled_data.csv
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
+        train:
+          estimator_name: ridge
+          estimators:
+            ridge:
+              params:
+                alpha: 30
+            xgboost:
+              params:
+                n_estimators: 1000
+                learning_rate: 0.5
+                max_depth: 16
+                subsample: 0.8
+                colsample_bytree: 0.9
+                colsample_bylevel: 0.4
+                scale_pos_weight: 85
+            random_forest:
+              params:
+                max_features: sqrt
+                min_samples_leaf: 1
+                n_estimators: 615
+                criterion: absolute_error
+          model_path: models/model.joblib
+          full_model_path: models/full_model.joblib
+    outs:
+    - path: models/full_model.joblib
+      md5: 18efbc62524b86ff7e6736c4b914283c
+      size: 2972
+  predictions:
+    cmd: python src/stages/predictions.py --config=params.yaml
+    deps:
+    - path: data/raw/gee.csv
+      md5: 824bbb3ac5f5c18b2b3567637af524f3
+      size: 566233
+    - path: models/full_model.joblib
+      md5: 18efbc62524b86ff7e6736c4b914283c
+      size: 2972
+    - path: src/stages/predictions.py
+      md5: 59763b3e169e0bbce765c700d8e32536
+      size: 1544
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_load:
+          s2a_df: data/raw/gee.csv
+          labels_download: data/raw/controle_mensal_demais_parametros.zip
+          labels_df: data/raw/vigi.csv
+          labeled_df: data/raw/labeled_data.csv
+        evaluate:
+          metrics_file: reports/metrics.json
+          metrics_data: reports/metrics.csv
+          predicted_vs_fitted_plot: reports/predicted_vs_fitted_plot.png
+          final_predictions_file: data/predictions/predicted.csv
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
+        train:
+          estimator_name: ridge
+          estimators:
+            ridge:
+              params:
+                alpha: 30
+            xgboost:
+              params:
+                n_estimators: 1000
+                learning_rate: 0.5
+                max_depth: 16
+                subsample: 0.8
+                colsample_bytree: 0.9
+                colsample_bylevel: 0.4
+                scale_pos_weight: 85
+            random_forest:
+              params:
+                max_features: sqrt
+                min_samples_leaf: 1
+                n_estimators: 615
+                criterion: absolute_error
+          model_path: models/model.joblib
+          full_model_path: models/full_model.joblib
+    outs:
+    - path: data/predictions/predicted.csv
+      md5: 2ce3afcf424f44c9816784d36630f224
+      size: 10204

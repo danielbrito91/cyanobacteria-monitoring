@@ -1,12 +1,8 @@
 import pandas as pd
-import yaml
 from datetime import datetime
 import numpy as np
 
-def load_data(config_path):
-    with open(config_path) as config_file:
-        config = yaml.safe_load(config_file)
-    
+def load_data(config):
     nome_eta = config["data_create"]["nome_eta"]
 
     gee = pd.read_csv(config["data_load"]["s2a_df"])
@@ -27,10 +23,8 @@ def load_data(config_path):
     
     return gee, ciano_labels
 
-def get_intervals(date_column, first_date, config_path):
+def get_intervals(date_column, first_date, config):
 
-    with open(config_path) as config_file:
-        config = yaml.safe_load(config_file)
 
     delta_d = config["data_create"]["delta_dias"]
 

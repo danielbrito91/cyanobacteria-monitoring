@@ -11,7 +11,7 @@ from src.utils.logs import get_logger
 def oversampling(df_train, config) -> pd.DataFrame:
     
     return smogn.smoter(data = df_train,
-        y = config["base"]["target"],
+        y = config["featurize"]["target_column"],
         k = 5,
         samp_method="extreme",
         rel_thres=.9,

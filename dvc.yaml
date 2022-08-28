@@ -63,3 +63,28 @@ stages:
     - reports/metrics.csv
     - reports/metrics.json
     - reports/predicted_vs_fitted_plot.png
+  train_full_data:
+    cmd: python src/stages/train_full_data.py --config=params.yaml
+    deps:
+    - src/stages/train_full_data.py
+    params:
+    - base
+    - data_load
+    - featurize
+    - train
+    outs:
+    - models/full_model.joblib
+  predictions:
+    cmd: python src/stages/predictions.py --config=params.yaml
+    deps:
+    - data/raw/gee.csv
+    - models/full_model.joblib
+    - src/stages/predictions.py
+    params:
+    - base
+    - data_load
+    - evaluate
+    - featurize
+    - train
+    outs:
+    - data/predictions/predicted.csv
