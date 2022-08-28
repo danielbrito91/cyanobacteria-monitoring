@@ -1,0 +1,36 @@
+stages:
+  data_load:
+    cmd: python src/stages/data_load.py --config=params.yaml
+    deps:
+    - src/stages/data_load.py
+    params:
+    - base
+    - data_load
+    outs:
+    - data/raw/gee.csv
+    - data/raw/vigi.csv
+  data_label:
+    cmd: python src/stages/data_label.py --config=params.yaml
+    deps:
+    - data/raw/gee.csv
+    - data/raw/vigi.csv
+    - src/stages/data_label.py
+    params:
+    - base
+    - data_create
+    - data_load
+    - featurize
+    outs:
+    - data/raw/labeled_data.csv
+  data_split:
+    cmd: python src/stages/data_split.py --config=params.yaml
+    deps:
+    - data/raw/labeled_data.csv
+    - src/stages/data_split.py
+    params:
+    - base
+    - data_load
+    - data_split
+    outs:
+    - data/processed/test.csv
+    - data/processed/train.csv
