@@ -22,11 +22,8 @@ def data_label(config_path: Text) -> None:
     df = pd.merge(gee, ciano_labels, on="interval")
 
     logger.info("Clean and select columns")
-    selected_columns = config["featurize"]["selected_clean_columns"].append(
-        [config["featurize"]["target_column"],
-        'Data da coleta',
-        'interval']
-        )
+    selected_columns = (config["featurize"]["selected_clean_columns"] +
+        [config["featurize"]["target_column"], 'Data da coleta', 'interval'])
 
     labeled_df = clean_and_select_data(df, selected_columns)
 
