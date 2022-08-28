@@ -34,3 +34,16 @@ stages:
     outs:
     - data/processed/test.csv
     - data/processed/train.csv
+  train:
+    cmd: python src/stages/train.py --config=params.yaml
+    deps:
+    - data/processed/test.csv
+    - data/processed/train.csv
+    - src/stages/train.py
+    params:
+    - base
+    - data_split
+    - featurize
+    - train
+    outs:
+    - models/model.joblib
