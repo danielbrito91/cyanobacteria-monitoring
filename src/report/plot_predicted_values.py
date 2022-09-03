@@ -13,7 +13,7 @@ def plot_predicted_values(config_path: Text):
 
     pred = pd.read_csv(config["evaluate"]["final_predictions_file"])
 
-    _, ciano = load_data("params.yaml")
+    _, ciano = load_data(config)
 
     gee_plot = go.Scatter(
         x=pred["date"],

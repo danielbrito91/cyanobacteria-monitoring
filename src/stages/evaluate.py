@@ -63,7 +63,8 @@ def evaluate_model(config_path: Text) -> None:
     }
 
     json.dump(
-        obj={"mae": report["mae"]},
+        obj={"mae": report["mae"],
+            "mape": report["mape"]},
         fp=open(config["evaluate"]["metrics_file"], "w")
     )
    
