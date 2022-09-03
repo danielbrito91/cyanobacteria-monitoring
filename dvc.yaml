@@ -61,8 +61,10 @@ stages:
     - train
     outs:
     - reports/metrics.csv
-    - reports/metrics.json
     - reports/predicted_vs_fitted_plot.png
+    metrics:
+    - reports/metrics.json:
+        cache: false
   train_full_data:
     cmd: python src/stages/train_full_data.py --config=params.yaml
     deps:
