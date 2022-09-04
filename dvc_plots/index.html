@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <title>DVC Plot</title>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.18.2"></script>
+    
+    <style>
+        table {
+            border-spacing: 15px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div id = "reports_metrics_csv">
+        <script type = "text/javascript">
+            var spec = {
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "data": {
+        "values": [
+    {
+        "amostragem": "2021-05-13",
+        "date": "2021-05-12",
+        "rev": "workspace",
+        "y_pred": "970.951645619097",
+        "y_true": "6997"
+    },
+    {
+        "amostragem": "2021-06-10",
+        "date": "2021-06-11",
+        "rev": "workspace",
+        "y_pred": "98.08203491977132",
+        "y_true": "1529"
+    },
+    {
+        "amostragem": "2021-06-10",
+        "date": "2021-06-13",
+        "rev": "workspace",
+        "y_pred": "106.89227967666906",
+        "y_true": "1529"
+    },
+    {
+        "amostragem": "2021-07-14",
+        "date": "2021-07-16",
+        "rev": "workspace",
+        "y_pred": "211.37416326424085",
+        "y_true": "0"
+    },
+    {
+        "amostragem": "2021-07-14",
+        "date": "2021-07-18",
+        "rev": "workspace",
+        "y_pred": "56.843922246010926",
+        "y_true": "0"
+    },
+    {
+        "amostragem": "2021-08-19",
+        "date": "2021-08-22",
+        "rev": "workspace",
+        "y_pred": "900.2303168178717",
+        "y_true": "1664"
+    },
+    {
+        "amostragem": "2021-10-06",
+        "date": "2021-10-06",
+        "rev": "workspace",
+        "y_pred": "89.76719636916837",
+        "y_true": "594"
+    },
+    {
+        "amostragem": "2021-11-15",
+        "date": "2021-11-13",
+        "rev": "workspace",
+        "y_pred": "907.5054500851109",
+        "y_true": "1836"
+    },
+    {
+        "amostragem": "2021-12-09",
+        "date": "2021-12-10",
+        "rev": "workspace",
+        "y_pred": "1151.7487689155232",
+        "y_true": "8323"
+    },
+    {
+        "amostragem": "2021-12-17",
+        "date": "2021-12-20",
+        "rev": "workspace",
+        "y_pred": "746.4186150076166",
+        "y_true": "9667"
+    },
+    {
+        "amostragem": "2021-12-29",
+        "date": "2021-12-28",
+        "rev": "workspace",
+        "y_pred": "1280.7224067047475",
+        "y_true": "2772"
+    },
+    {
+        "amostragem": "2021-12-29",
+        "date": "2021-12-30",
+        "rev": "workspace",
+        "y_pred": "1618.8341579479734",
+        "y_true": "2772"
+    },
+    {
+        "amostragem": "2022-01-05",
+        "date": "2022-01-07",
+        "rev": "workspace",
+        "y_pred": "7007.684763479949",
+        "y_true": "1783"
+    },
+    {
+        "amostragem": "2022-01-11",
+        "date": "2022-01-12",
+        "rev": "workspace",
+        "y_pred": "7406.554567903481",
+        "y_true": "28508"
+    },
+    {
+        "amostragem": "2022-01-11",
+        "date": "2022-01-14",
+        "rev": "workspace",
+        "y_pred": "33501.42605942918",
+        "y_true": "28508"
+    },
+    {
+        "amostragem": "2022-01-20",
+        "date": "2022-01-24",
+        "rev": "workspace",
+        "y_pred": "10584.735211938778",
+        "y_true": "10674"
+    },
+    {
+        "amostragem": "2022-01-26",
+        "date": "2022-01-29",
+        "rev": "workspace",
+        "y_pred": "541.2248488489515",
+        "y_true": "6142"
+    },
+    {
+        "amostragem": "2022-02-10",
+        "date": "2022-02-11",
+        "rev": "workspace",
+        "y_pred": "3361.249926952653",
+        "y_true": "10557"
+    },
+    {
+        "amostragem": "2022-02-16",
+        "date": "2022-02-16",
+        "rev": "workspace",
+        "y_pred": "935.3898492021762",
+        "y_true": "1793"
+    },
+    {
+        "amostragem": "2022-02-16",
+        "date": "2022-02-18",
+        "rev": "workspace",
+        "y_pred": "640.7381758348641",
+        "y_true": "1793"
+    },
+    {
+        "amostragem": "2022-03-03",
+        "date": "2022-03-03",
+        "rev": "workspace",
+        "y_pred": "608.1093664449296",
+        "y_true": "3077"
+    },
+    {
+        "amostragem": "2022-03-03",
+        "date": "2022-03-05",
+        "rev": "workspace",
+        "y_pred": "2489.5170510679436",
+        "y_true": "3077"
+    },
+    {
+        "amostragem": "2022-03-16",
+        "date": "2022-03-18",
+        "rev": "workspace",
+        "y_pred": "2382.8403541729945",
+        "y_true": "614"
+    },
+    {
+        "amostragem": "2022-04-01",
+        "date": "2022-04-02",
+        "rev": "workspace",
+        "y_pred": "301.0051832964701",
+        "y_true": "1436"
+    },
+    {
+        "amostragem": "2022-04-13",
+        "date": "2022-04-14",
+        "rev": "workspace",
+        "y_pred": "90.31408242676959",
+        "y_true": "3083"
+    }
+]
+    },
+    "title": "reports/metrics.csv",
+    "width": 300,
+    "height": 300,
+    "layer": [
+        {
+            "encoding": {
+                "x": {
+                    "field": "y_pred",
+                    "type": "quantitative",
+                    "title": "y_pred"
+                },
+                "y": {
+                    "field": "y_true",
+                    "type": "quantitative",
+                    "title": "y_true",
+                    "scale": {
+                        "zero": false
+                    }
+                },
+                "color": {
+                    "field": "rev",
+                    "type": "nominal"
+                }
+            },
+            "layer": [
+                {
+                    "mark": "point"
+                },
+                {
+                    "selection": {
+                        "label": {
+                            "type": "single",
+                            "nearest": true,
+                            "on": "mouseover",
+                            "encodings": [
+                                "x"
+                            ],
+                            "empty": "none",
+                            "clear": "mouseout"
+                        }
+                    },
+                    "mark": "point",
+                    "encoding": {
+                        "opacity": {
+                            "condition": {
+                                "selection": "label",
+                                "value": 1
+                            },
+                            "value": 0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "transform": [
+                {
+                    "filter": {
+                        "selection": "label"
+                    }
+                }
+            ],
+            "layer": [
+                {
+                    "encoding": {
+                        "text": {
+                            "type": "quantitative",
+                            "field": "y_true"
+                        },
+                        "x": {
+                            "field": "y_pred",
+                            "type": "quantitative"
+                        },
+                        "y": {
+                            "field": "y_true",
+                            "type": "quantitative"
+                        }
+                    },
+                    "layer": [
+                        {
+                            "mark": {
+                                "type": "text",
+                                "align": "left",
+                                "dx": 5,
+                                "dy": -5
+                            },
+                            "encoding": {
+                                "color": {
+                                    "type": "nominal",
+                                    "field": "rev"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+;
+            vegaEmbed('#reports_metrics_csv', spec);
+        </script>
+    </div>
+    
+
+        <div
+            id="reports_predicted_vs_fitted_plot_png"
+            style="border:1px solid black;text-align:center;
+            white-space: nowrap;overflow-y:hidden;">
+            <p>reports/predicted_vs_fitted_plot.png</p>
+
+                <div
+                    style="border:1px dotted black;margin:2px;display:
+                    inline-block;
+                    overflow:hidden;margin-left:8px;">
+                    <p>workspace</p>
+                    <img src="static\workspace_reports_predicted_vs_fitted_plot.png">
+                </div>
+                
+        </div>
+</body>
+</html>

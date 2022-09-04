@@ -59,8 +59,11 @@ stages:
     - evaluate
     - featurize
     - train
-    outs:
-    - reports/metrics.csv
+    plots:
+    - reports/metrics.csv:
+        template: scatter
+        x: y_pred
+        y: y_true
     - reports/predicted_vs_fitted_plot.png
     metrics:
     - reports/metrics.json:
