@@ -26,15 +26,18 @@ def get_supported_estimator() -> Dict:
         'random_forest': RandomForestRegressor
     }
 
-def train_model(df: pd.DataFrame, target_column: Text, 
-    estimator_name: Text, params: Dict, polynomial_degree: int):
+def train_model(
+    df: pd.DataFrame, target_column: Text, 
+    estimator_name: Text, params: Dict, polynomial_degree: int,
+    experiment_name, run_name):
 
     estimators = get_supported_estimator()
     if estimator_name not in estimators.keys():
         raise UnsupportedRegressor(estimator_name)
 
     # Start MLFlow
-    with mlflow.start_run():
+    mlflow.set_experiment(experiment_name=experiment_name)
+    with mlflow.start_run(run_name=run_name):
         regressor = estimators[estimator_name](**params)
         poly = PolynomialFeatures(degree=polynomial_degree, include_bias=False)
         poly_reg = Pipeline([
@@ -56,18 +59,6 @@ def train_model(df: pd.DataFrame, target_column: Text,
         for param, value in params.items():
             mlflow.log_param(param, value)
         
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-        print(tracking_url_type_store)
-
-        if tracking_url_type_store != "file":
-            if estimator_name !=  "xgboost":
-                mlflow.sklearn.log_model(model, "model", registered_model_name=estimator_name)
-            else:
-                mlflow.xgboost.log_model(model, "model", registered_model_name=estimator_name)
-        else:
-            if estimator_name !=  "xgboost":
-                mlflow.sklearn.log_model(model, "model")
-            else:
-                mlflow.xgboost.log_model(model, "model")
+        mlflow.log_artifacts(model)
    
     return model

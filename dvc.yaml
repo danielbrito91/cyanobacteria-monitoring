@@ -40,6 +40,7 @@ stages:
     - data/processed/test.csv
     - data/processed/train.csv
     - src/stages/train.py
+    - src/train/train_model.py
     params:
     - base
     - data_split

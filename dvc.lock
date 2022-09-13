@@ -204,8 +204,8 @@ stages:
       md5: c9a448abd901b8b8d13aee39dc4c0b42
       size: 2972
     - path: src/stages/evaluate.py
-      md5: 4b6c3fb4ce598fb841ed2ff1d213b5ab
-      size: 2604
+      md5: e24f33de5028d41b15f6339104228a56
+      size: 2739
     params:
       params.yaml:
         base:

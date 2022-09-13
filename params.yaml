@@ -46,6 +46,12 @@ featurize:
   selected_features: ["B3_B4", "NDVI_median", "B5_B4", "NDCI_median", "B5B3_B2", "B5_B2"]
   poly_degree: 3
 
+mlflow_config:
+  tracking_uri: "experiments"
+  experiment_name: "teste"
+  run_name: "teste"
+
+
 train:
   estimator_name: ridge
   estimators:

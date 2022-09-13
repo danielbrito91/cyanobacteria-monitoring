@@ -30,7 +30,10 @@ def train(config_path: Text):
         target_column = target,
         estimator_name = selected_regressor,
         params = config["train"]["estimators"][selected_regressor]["params"],
-        polynomial_degree = config["featurize"]["poly_degree"])
+        polynomial_degree = config["featurize"]["poly_degree"],
+        experiment_name = config["mlflow_config"]["experiment_name"],
+        run_name = config["mlflow_config"]["run_name"]
+        )
     
     logger.info("Save model")
     model_path = config["train"]["model_path"]
