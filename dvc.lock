@@ -130,8 +130,11 @@ stages:
       md5: 443a361261876b3cf093c9d433d246aa
       size: 17663
     - path: src/stages/train.py
-      md5: dac38ac674b83647818292413b42a530
-      size: 1537
+      md5: 7773e7670aa1d4713ce006eb9a51a979
+      size: 1547
+    - path: src/train/train_model.py
+      md5: 00e823961e1a123e360b1a1670c8430e
+      size: 1701
     params:
       params.yaml:
         base:
@@ -204,8 +207,8 @@ stages:
       md5: c9a448abd901b8b8d13aee39dc4c0b42
       size: 2972
     - path: src/stages/evaluate.py
-      md5: e24f33de5028d41b15f6339104228a56
-      size: 2739
+      md5: 7dcc283a090a6780e2eccafb5e0aabea
+      size: 3086
     params:
       params.yaml:
         base:

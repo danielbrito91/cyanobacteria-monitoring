@@ -47,10 +47,8 @@ featurize:
   poly_degree: 3
 
 mlflow_config:
-  tracking_uri: "experiments"
   experiment_name: "teste"
   run_name: "teste"
-
 
 train:
   estimator_name: ridge

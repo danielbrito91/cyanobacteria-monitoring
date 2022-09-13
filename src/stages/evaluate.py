@@ -64,11 +64,18 @@ def evaluate_model(config_path: Text) -> None:
         "mae": mean_absolute_error(y_test, y_pred)
     }
 
+    estimator_name = config["train"]["estimator_name"]
+
     mlflow.set_experiment(experiment_name=config["mlflow_config"]["experiment_name"])
     with mlflow.start_run(run_name=config["mlflow_config"]["run_name"]):
+        for param, value in config["train"]["estimators"][estimator_name]["params"].items():
+            mlflow.log_param(param, value)
+        
         mlflow.log_metric("mae", mean_absolute_error(y_test, y_pred))
-        mlflow.log_artifacts(model)
-
+        if estimator_name=="xgboost":
+            mlflow.xgboost.log_model(model, "model")
+        else:
+            mlflow.sklearn.log_model(model, "model")
 
     json.dump(
         obj={"mae": report["mae"]},

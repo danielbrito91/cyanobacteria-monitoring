@@ -28,37 +28,29 @@ def get_supported_estimator() -> Dict:
 
 def train_model(
     df: pd.DataFrame, target_column: Text, 
-    estimator_name: Text, params: Dict, polynomial_degree: int,
-    experiment_name, run_name):
+    estimator_name: Text, params: Dict, polynomial_degree: int):
 
     estimators = get_supported_estimator()
     if estimator_name not in estimators.keys():
         raise UnsupportedRegressor(estimator_name)
 
     # Start MLFlow
-    mlflow.set_experiment(experiment_name=experiment_name)
-    with mlflow.start_run(run_name=run_name):
-        regressor = estimators[estimator_name](**params)
-        poly = PolynomialFeatures(degree=polynomial_degree, include_bias=False)
-        poly_reg = Pipeline([
+    regressor = estimators[estimator_name](**params)
+    poly = PolynomialFeatures(degree=polynomial_degree, include_bias=False)
+    poly_reg = Pipeline([
                 ("poly", poly),
                 ("regressor", regressor)
             ])
         
-        model = TransformedTargetRegressor(
+    model = TransformedTargetRegressor(
             regressor = poly_reg,
             transformer=PowerTransformer(method="yeo-johnson")
         )
 
-        # Get X and y
-        X_train = df.drop(columns = [target_column])
-        y_train = df[target_column]
+    # Get X and y
+    X_train = df.drop(columns = [target_column])
+    y_train = df[target_column]
 
-        model.fit(X_train, y_train)
+    model.fit(X_train, y_train)
 
-        for param, value in params.items():
-            mlflow.log_param(param, value)
-        
-        mlflow.log_artifacts(model)
-   
     return model
