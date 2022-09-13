@@ -57,6 +57,7 @@ def train_model(df: pd.DataFrame, target_column: Text,
             mlflow.log_param(param, value)
         
         tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
+        print(tracking_url_type_store)
 
         if tracking_url_type_store != "file":
             if estimator_name !=  "xgboost":

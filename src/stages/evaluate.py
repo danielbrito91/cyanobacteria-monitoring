@@ -6,6 +6,9 @@ import argparse
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
 import json
 from pathlib import Path
+import mlflow
+import mlflow.xgboost
+import mlflow.sklearn
 
 from src.utils.logs import get_logger
 from src.features.featurize import create_ratios
@@ -58,13 +61,19 @@ def evaluate_model(config_path: Text) -> None:
 
     logger.info("Save metrics")
     report = {
-        "mae": mean_absolute_error(y_test, y_pred),
-        "mape": mean_absolute_percentage_error(y_test, y_pred)
+        "mae": mean_absolute_error(y_test, y_pred)
     }
 
+    with mlflow.start_run():
+        mlflow.log_metric("mae", mean_absolute_error(y_test, y_pred))
+        if config["train"]["estimator_name"] != "xgboost":
+            mlflow.sklearn.log_model(model, "model")
+        else:
+            mlflow.xgboost.log_model(model, "model")
+
+
     json.dump(
-        obj={"mae": report["mae"],
-            "mape": report["mape"]},
+        obj={"mae": report["mae"]},
         fp=open(config["evaluate"]["metrics_file"], "w")
     )
    

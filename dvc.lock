@@ -172,7 +172,7 @@ stages:
           estimators:
             ridge:
               params:
-                alpha: 2
+                alpha: 3
             xgboost:
               params:
                 n_estimators: 1000
@@ -192,7 +192,7 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/model.joblib
-      md5: 3001293c2d32eda591f047351d9d06ea
+      md5: c9a448abd901b8b8d13aee39dc4c0b42
       size: 2972
   evaluate:
     cmd: python src/stages/evaluate.py --config=params.yaml
@@ -201,11 +201,11 @@ stages:
       md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
       size: 4039
     - path: models/model.joblib
-      md5: 3001293c2d32eda591f047351d9d06ea
+      md5: c9a448abd901b8b8d13aee39dc4c0b42
       size: 2972
     - path: src/stages/evaluate.py
-      md5: f4287ff16f39795f2f92806cc94aae96
-      size: 2492
+      md5: 4b6c3fb4ce598fb841ed2ff1d213b5ab
+      size: 2604
     params:
       params.yaml:
         base:
@@ -251,7 +251,7 @@ stages:
           estimators:
             ridge:
               params:
-                alpha: 2
+                alpha: 3
             xgboost:
               params:
                 n_estimators: 1000
@@ -271,14 +271,14 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: reports/metrics.csv
-      md5: fab52182d274ce86bf0a1c40de306f53
+      md5: da753a7b5037cbad4db3d29e2f345353
       size: 1185
     - path: reports/metrics.json
-      md5: 64872e03e415c05be5276f8213552cdd
-      size: 58
+      md5: f0c652e89fa98a5abfc265f8f4f6fc85
+      size: 25
     - path: reports/predicted_vs_fitted_plot.png
-      md5: 9fcb35a9fc27d8fadc0ba8c73f099b18
-      size: 28891
+      md5: 257bbceafd119400955b4139c6f022a8
+      size: 32038
   train_full_data:
     cmd: python src/stages/train_full_data.py --config=params.yaml
     deps:
@@ -326,7 +326,7 @@ stages:
           estimators:
             ridge:
               params:
-                alpha: 2
+                alpha: 3
             xgboost:
               params:
                 n_estimators: 1000
@@ -346,7 +346,7 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/full_model.joblib
-      md5: e935df2628ee03de268c22b490d47eb2
+      md5: 1cf33fce44d824c5c43e574e8058ceb8
       size: 2972
   predictions:
     cmd: python src/stages/predictions.py --config=params.yaml
@@ -355,7 +355,7 @@ stages:
       md5: 824bbb3ac5f5c18b2b3567637af524f3
       size: 566233
     - path: models/full_model.joblib
-      md5: e935df2628ee03de268c22b490d47eb2
+      md5: 1cf33fce44d824c5c43e574e8058ceb8
       size: 2972
     - path: src/stages/predictions.py
       md5: 59763b3e169e0bbce765c700d8e32536
@@ -406,7 +406,7 @@ stages:
           estimators:
             ridge:
               params:
-                alpha: 2
+                alpha: 3
             xgboost:
               params:
                 n_estimators: 1000
@@ -426,5 +426,5 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: data/predictions/predicted.csv
-      md5: 78a4a2956755f5e0a819b6a27a01dff7
-      size: 10237
+      md5: ed08f3bf5168a1e96bd366574d5c160f
+      size: 10240

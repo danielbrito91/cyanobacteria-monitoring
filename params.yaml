@@ -51,7 +51,7 @@ train:
   estimators:
     ridge:
       params:
-        alpha: 2 #30
+        alpha: 3 #30
     xgboost:
       params:
         n_estimators: 1000
