@@ -31,8 +31,8 @@ featurize:
         'NDVI_median',
         'NDCI_median',
         'B1_median',
-        'B2_median', 
-        'B3_median', 
+        'B2_median',
+        'B3_median',
         'B4_median',
         'B5_median',
         'B6_median',
@@ -47,15 +47,14 @@ featurize:
   poly_degree: 3
 
 mlflow_config:
-  experiment_name: "teste"
-  run_name: "teste"
+  experiment_name: "baselines"
 
 train:
   estimator_name: ridge
   estimators:
     ridge:
       params:
-        alpha: 3 #30
+        alpha: 30 #30
     xgboost:
       params:
         n_estimators: 1000

@@ -1,44 +1,51 @@
-
-import pandas as pd
-from typing import Text
-import yaml
-import joblib
 import argparse
+from typing import Text
 
-from src.features.featurize import create_ratios
-from src.train.train_model import train_model
-from src.utils.logs import get_logger
+import joblib
+import json
+import pandas as pd
+import yaml
+from src.data import preprocess
+
+from src.train import train_model
+from src.utils import logs
+
 
 # Read data
-def train_on_full_dataset(config_path: Text):
+def train_on_full_dataset(config_path: Text) -> None:
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
-    logger = get_logger("TRAIN_FULL", log_level=config["base"]["log_level"])
+    logger = logs.get_logger("TRAIN_FULL", log_level=config["base"]["log_level"])
 
     logger.info("Load full dataset")
-    full_df = pd.read_csv(config["data_load"]["labeled_df"])
     selected_cols = config["featurize"]["selected_features"]
     target = config["featurize"]["target_column"]
-    id = full_df[["date", "Data da coleta"]]
+    full_df = pd.read_csv(config["data_load"]["labeled_df"])
 
-    logger.info("Featurize full dataset")
-    full_df = create_ratios(full_df)
-    full_df = full_df[selected_cols + [target]]
+    logger.info("Preprocess full dataset")
+    full_df = preprocess.clean_data(full_df)
+    full_df = preprocess.create_ratios(full_df)
+
+    # id = full_df[["date", "Data da coleta"]]
+    X_full = full_df[selected_cols]
+    y_full = full_df[target]
+
+    logger.info("Get the best regressor")
+    # Keys: "model", "performance", "pred_true_plot"
+    best_regressor_artifacts = train_model.get_best_model(
+        config["mlflow_config"]["experiment_name"]
+    )
 
     logger.info("Train selected regressor on full dataset")
-    selected_regressor = config["train"]["estimator_name"]
-    trained_model = train_model(
-        df = full_df,
-        target_column = target,
-        estimator_name = selected_regressor,
-        params = config["train"]["estimators"][selected_regressor]["params"],
-        polynomial_degree = config["featurize"]["poly_degree"]
-        )
-        
+    trained_model = best_regressor_artifacts["model"].fit(X_full, y_full)
+
     logger.info("Save model")
-    model_path = config["train"]["full_model_path"]
-    joblib.dump(trained_model, model_path)
+    joblib.dump(trained_model, config["train"]["full_model_path"])
+
+    logger.info("Save other artifacts")
+    train_model.save_dict(best_regressor_artifacts["performance"], config["evaluate"]["metrics_file"])
+
 
 if __name__ == "__main__":
     args_parser = argparse.ArgumentParser()

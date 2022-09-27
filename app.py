@@ -24,26 +24,31 @@ st.markdown(
 fig = plot_predicted_values("params.yaml")
 st.plotly_chart(fig, use_container_width=True)
 
+
 @st.cache
-def convert_df(df):    
-    return df.to_csv().encode('utf-8')
+def convert_df(df):
+    return df.to_csv().encode("utf-8")
+
 
 csv = convert_df(predicted_values)
 
 st.download_button(
-    label = "Download predictions as CSV",
+    label="Download predictions as CSV",
     data=csv,
     file_name="predictions.csv",
-    mime="text/csv")
+    mime="text/csv",
+)
 
 st.header("About the project")
 
 mae_file = open(config["evaluate"]["metrics_file"])
 mae = json.load(mae_file)
 
-st.markdown(f"""
+st.markdown(
+    f"""
 A machine learning model to predict the cyanobacteria concentration at Guaíba Lake
 using Sentinel 2A data.
 
 Mean absolute error of {round(mae["mae"])} cells/mL
-""")
+"""
+)

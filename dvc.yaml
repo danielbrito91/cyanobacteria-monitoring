@@ -9,6 +9,7 @@ stages:
     outs:
     - data/raw/gee.csv
     - data/raw/vigi.csv
+  
   data_label:
     cmd: python src/stages/data_label.py --config=params.yaml
     deps:
@@ -22,18 +23,22 @@ stages:
     - featurize
     outs:
     - data/raw/labeled_data.csv
+
   data_split:
     cmd: python src/stages/data_split.py --config=params.yaml
     deps:
     - data/raw/labeled_data.csv
+    - src/data/preprocess.py
     - src/stages/data_split.py
     params:
     - base
     - data_load
     - data_split
+    - featurize
     outs:
     - data/processed/test.csv
     - data/processed/train.csv
+
   train:
     cmd: python src/stages/train.py --config=params.yaml
     deps:
@@ -45,41 +50,27 @@ stages:
     - base
     - data_split
     - featurize
+    - mlflow_config
     - train
     outs:
     - models/model.joblib
-  evaluate:
-    cmd: python src/stages/evaluate.py --config=params.yaml
-    deps:
-    - data/processed/test.csv
-    - models/model.joblib
-    - src/stages/evaluate.py
-    params:
-    - base
-    - data_split
-    - evaluate
-    - featurize
-    - train
-    plots:
-    - reports/metrics.csv:
-        template: scatter
-        x: y_pred
-        y: y_true
-    - reports/predicted_vs_fitted_plot.png
-    metrics:
-    - reports/metrics.json:
-        cache: false
+
   train_full_data:
     cmd: python src/stages/train_full_data.py --config=params.yaml
     deps:
+    - data/raw/labeled_data.csv
     - src/stages/train_full_data.py
+    - models/model.joblib
     params:
     - base
     - data_load
     - featurize
     - train
+    - mlflow_config
     outs:
     - models/full_model.joblib
+    - reports/metrics.json
+
   predictions:
     cmd: python src/stages/predictions.py --config=params.yaml
     deps:
@@ -89,7 +80,6 @@ stages:
     params:
     - base
     - data_load
-    - evaluate
     - featurize
     - train
     outs:

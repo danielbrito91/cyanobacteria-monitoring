@@ -3,15 +3,9 @@ stages:
   data_load:
     cmd: python src/stages/data_load.py --config=params.yaml
     deps:
-    - path: src/data/load_vigilancia.py
-      md5: 10d3630c09f56bfeaf4070dc3cee1d26
-      size: 1075
-    - path: src/data/make_s2a_dataset.py
-      md5: 372daa46d995a24d7b57bde3c6d1f5ab
-      size: 5253
     - path: src/stages/data_load.py
-      md5: a5d6ec5be845612fcdf5d08b2beb2ff1
-      size: 1063
+      md5: f38968c7ccba86ab8323c4572213b1ce
+      size: 1067
     params:
       params.yaml:
         base:
@@ -24,8 +18,8 @@ stages:
           labeled_df: data/raw/labeled_data.csv
     outs:
     - path: data/raw/gee.csv
-      md5: 824bbb3ac5f5c18b2b3567637af524f3
-      size: 566233
+      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
+      size: 579647
     - path: data/raw/vigi.csv
       md5: 8392e8b0a441178b1c2f442aca8b2f44
       size: 1528947
@@ -33,14 +27,14 @@ stages:
     cmd: python src/stages/data_label.py --config=params.yaml
     deps:
     - path: data/raw/gee.csv
-      md5: 824bbb3ac5f5c18b2b3567637af524f3
-      size: 566233
+      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
+      size: 579647
     - path: data/raw/vigi.csv
       md5: 8392e8b0a441178b1c2f442aca8b2f44
       size: 1528947
     - path: src/stages/data_label.py
-      md5: ccf748b2f3ec48c8e496ce681c5a35a2
-      size: 1430
+      md5: 38c68645f6829f4e942095e55dba2136
+      size: 1466
     params:
       params.yaml:
         base:
@@ -96,9 +90,12 @@ stages:
     - path: data/raw/labeled_data.csv
       md5: 1f11a8310a855e557bc502279a98ce8c
       size: 11211
+    - path: src/data/preprocess.py
+      md5: 4dfb85ec88e02610811f3dabea0280d0
+      size: 1542
     - path: src/stages/data_split.py
-      md5: 7583104f8999af021b47768e4652042b
-      size: 1650
+      md5: c12cd95a9a7c591e4d35ef6a6cf5d269
+      size: 1130
     params:
       params.yaml:
         base:
@@ -113,28 +110,54 @@ stages:
           trainset_path: data/processed/train.csv
           testset_path: data/processed/test.csv
           years_split_test: 1
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B3_B4
+          - NDVI_median
+          - B5_B4
+          - NDCI_median
+          - B5B3_B2
+          - B5_B2
+          poly_degree: 3
     outs:
     - path: data/processed/test.csv
-      md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
-      size: 4039
+      md5: 27ec3e3c2b3e61da14b5befb6c025466
+      size: 6371
     - path: data/processed/train.csv
-      md5: 443a361261876b3cf093c9d433d246aa
-      size: 17663
+      md5: 8cc02f7fa3b9eea39e5011c7a9a32af3
+      size: 11729
   train:
     cmd: python src/stages/train.py --config=params.yaml
     deps:
     - path: data/processed/test.csv
-      md5: 76e9d9e241c2f7ca4d01e32799dcbe9c
-      size: 4039
+      md5: 27ec3e3c2b3e61da14b5befb6c025466
+      size: 6371
     - path: data/processed/train.csv
-      md5: 443a361261876b3cf093c9d433d246aa
-      size: 17663
+      md5: 8cc02f7fa3b9eea39e5011c7a9a32af3
+      size: 11729
     - path: src/stages/train.py
-      md5: 7773e7670aa1d4713ce006eb9a51a979
-      size: 1547
+      md5: 64a311f3256bd3d4015753d83ff5f635
+      size: 2091
     - path: src/train/train_model.py
-      md5: 00e823961e1a123e360b1a1670c8430e
-      size: 1701
+      md5: c895dab84473d82f489661d539317caf
+      size: 5738
     params:
       params.yaml:
         base:
@@ -170,12 +193,14 @@ stages:
           - B5B3_B2
           - B5_B2
           poly_degree: 3
+        mlflow_config:
+          experiment_name: baselines
         train:
           estimator_name: ridge
           estimators:
             ridge:
               params:
-                alpha: 3
+                alpha: 30
             xgboost:
               params:
                 n_estimators: 1000
@@ -195,8 +220,8 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/model.joblib
-      md5: c9a448abd901b8b8d13aee39dc4c0b42
-      size: 2972
+      md5: 79e962d642f9e0b8eb255811f4442120
+      size: 8034
   evaluate:
     cmd: python src/stages/evaluate.py --config=params.yaml
     deps:
@@ -285,9 +310,15 @@ stages:
   train_full_data:
     cmd: python src/stages/train_full_data.py --config=params.yaml
     deps:
+    - path: data/raw/labeled_data.csv
+      md5: 1f11a8310a855e557bc502279a98ce8c
+      size: 11211
+    - path: models/model.joblib
+      md5: 79e962d642f9e0b8eb255811f4442120
+      size: 8034
     - path: src/stages/train_full_data.py
-      md5: f253cdefdc8190af38c40ab22677a679
-      size: 1643
+      md5: 14c7cc5ad2c446a2bada33ec4377e003
+      size: 1768
     params:
       params.yaml:
         base:
@@ -324,12 +355,14 @@ stages:
           - B5B3_B2
           - B5_B2
           poly_degree: 3
+        mlflow_config:
+          experiment_name: baselines
         train:
           estimator_name: ridge
           estimators:
             ridge:
               params:
-                alpha: 3
+                alpha: 30
             xgboost:
               params:
                 n_estimators: 1000
@@ -349,20 +382,23 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/full_model.joblib
-      md5: 1cf33fce44d824c5c43e574e8058ceb8
-      size: 2972
+      md5: d546dc086827794ad9cba64aadd5d7dd
+      size: 3080
+    - path: reports/metrics.json
+      md5: df0d6b22a4f980248bc123e6d0becd2a
+      size: 63
   predictions:
     cmd: python src/stages/predictions.py --config=params.yaml
     deps:
     - path: data/raw/gee.csv
-      md5: 824bbb3ac5f5c18b2b3567637af524f3
-      size: 566233
+      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
+      size: 579647
     - path: models/full_model.joblib
-      md5: 1cf33fce44d824c5c43e574e8058ceb8
-      size: 2972
+      md5: d546dc086827794ad9cba64aadd5d7dd
+      size: 3080
     - path: src/stages/predictions.py
-      md5: 59763b3e169e0bbce765c700d8e32536
-      size: 1544
+      md5: 511b2172e22089df0eaa3d86cfd2ab5c
+      size: 1435
     params:
       params.yaml:
         base:
@@ -373,11 +409,6 @@ stages:
           labels_download: data/raw/controle_mensal_demais_parametros.zip
           labels_df: data/raw/vigi.csv
           labeled_df: data/raw/labeled_data.csv
-        evaluate:
-          metrics_file: reports/metrics.json
-          metrics_data: reports/metrics.csv
-          predicted_vs_fitted_plot: reports/predicted_vs_fitted_plot.png
-          final_predictions_file: data/predictions/predicted.csv
         featurize:
           target_column: Resultado
           selected_clean_columns:
@@ -409,7 +440,7 @@ stages:
           estimators:
             ridge:
               params:
-                alpha: 3
+                alpha: 30
             xgboost:
               params:
                 n_estimators: 1000
@@ -429,5 +460,5 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: data/predictions/predicted.csv
-      md5: ed08f3bf5168a1e96bd366574d5c160f
-      size: 10240
+      md5: 79e4b3fa6bd8a3a072b1233e38d25b8c
+      size: 10482

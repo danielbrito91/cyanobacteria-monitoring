@@ -1,50 +1,38 @@
 import argparse
+from typing import Text
+
 import pandas as pd
 import yaml
-from typing import Text
-from dateutil.relativedelta import relativedelta
-import argparse
-import smogn
 
-from src.utils.logs import get_logger
+from src.data import preprocess
+from src.utils import logs
 
-def oversampling(df_train, config) -> pd.DataFrame:
-    
-    return smogn.smoter(data = df_train,
-        y = config["featurize"]["target_column"],
-        k = 5,
-        samp_method="extreme",
-        rel_thres=.9,
-        rel_method="auto",
-        rel_xtrm_type="high",
-        rel_coef=10)
 
-def data_split(config_path: Text) -> None:
-    
+def prep_and_split(config_path: Text):
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
-    
-    logger = get_logger("DATA_SPLIT", log_level=config["base"]["log_level"])
 
-    logger.info("Load features")
+    logger = logs.get_logger("DATA_SPLIT", log_level=config["base"]["log_level"])
+
+    logger.info("Load labeled data")
     df = pd.read_csv(config["data_load"]["labeled_df"])
-    
-    date_limit_test = (pd.to_datetime(max(df["date"])) - relativedelta(years=config["data_split"]["years_split_test"]))
 
-    logger.info("Split data into train and test")
-    df_train = df[pd.to_datetime(df["date"]) <= date_limit_test]
-    df_test = df.loc[pd.to_datetime(df["date"]) > date_limit_test]
+    logger.info("Create features and clean the dataset")
+    df = preprocess.clean_data(df)
+    df = preprocess.create_ratios(df)
 
-    logger.info("Oversampling training data")
-    df_train = oversampling(df_train, config)
+    logger.info("Split the dataset")
+    df_train, df_test = preprocess.train_test_split_ts(df, config)
 
-    logger.info("Save train and test sets")
+    logger.info("Persist the splitted dataset")
     df_train.to_csv(config["data_split"]["trainset_path"], index=False)
     df_test.to_csv(config["data_split"]["testset_path"], index=False)
 
+
 if __name__ == "__main__":
+
     args_parser = argparse.ArgumentParser()
     args_parser.add_argument("--config", dest="config", required=True)
     args = args_parser.parse_args()
 
-    data_split(config_path=args.config) 
+    prep_and_split(config_path=args.config)
