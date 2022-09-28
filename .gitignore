@@ -7,3 +7,7 @@ venv
 
 # Models
 models/
+mlruns/
+
+# VSCcode
+.vscode
