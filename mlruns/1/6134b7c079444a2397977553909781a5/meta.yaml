@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Daniel/cyanobacteria-monitoring/mlruns/1/6134b7c079444a2397977553909781a5/artifacts
+end_time: 1664359948558
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 6134b7c079444a2397977553909781a5
+run_uuid: 6134b7c079444a2397977553909781a5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1664359944534
+status: 3
+tags: []
+user_id: Daniel

@@ -9,8 +9,8 @@ DATA_DIR = Path(BASE_DIR, "data")
 LOGS_DIR = Path(BASE_DIR, "logs")
 
 # Stores
-MODEL_REGISTRY = Path("models")
+#MODEL_REGISTRY = Path("models")
 
 # MLFlow models
 #mlflow.set_tracking_uri("file:///" + str(MODEL_REGISTRY.absolute()))
-mlflow.set_tracking_uri("sqlite:///:memory:")
+#mlflow.set_tracking_uri("sqlite:///:memory:")

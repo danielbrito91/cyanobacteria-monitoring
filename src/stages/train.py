@@ -33,6 +33,8 @@ def train(config_path: Text):
     df = preprocess.create_ratios(df)
 
     # Train
+   # mlflow.set_tracking_uri("file:///" +  "mlruns")
+    #mlflow.create_experiment(experiment_name=config["mlflow_config"]["experiment_name"], artifact_location='mlruns/')
     mlflow.set_experiment(experiment_name=config["mlflow_config"]["experiment_name"])
     with mlflow.start_run(run_name=config["train"]["estimator_name"]):
         run_id = mlflow.active_run().info.run_id
@@ -51,6 +53,7 @@ def train(config_path: Text):
             joblib.dump(artifacts["tscv"], Path(dp, "tscv.pkl"))
             joblib.dump(artifacts["model"], Path(dp, "model.pkl"))
             train_model.save_dict(artifacts["performance"], Path(dp, "performance.json"))
+            artifacts["pred_vs_true_plot"].write_image(Path(dp, "pred_vs_true_plot.png"))
             mlflow.log_artifacts(dp)
 
     logger.info("Save model")

@@ -165,6 +165,7 @@ def get_best_model(experiment_name: str) -> dict:
         dict: model (model.pkl object), "performance"
         (dict containing metrics of the best model)
     """
+    #mlflow.set_tracking_uri("file:///" +  "mlruns")
     experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
     experiment_runs = mlflow.search_runs(
         experiment_ids=experiment_id, order_by=["metrics.mae"]
