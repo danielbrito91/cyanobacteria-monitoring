@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import yaml
 from plotly.subplots import make_subplots
 
-from src.data.label_gee import load_data
+from src.data import label_gee
 
 
 def plot_predicted_values(config_path: Text):
@@ -15,7 +15,7 @@ def plot_predicted_values(config_path: Text):
 
     pred = pd.read_csv(config["evaluate"]["final_predictions_file"])
 
-    _, ciano = load_data(config)
+    _, ciano = label_gee.load_data(config)
 
     gee_plot = go.Scatter(x=pred["date"], y=pred["y_pred"], name="Predicted values")
 

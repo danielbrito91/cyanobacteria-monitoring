@@ -26,15 +26,15 @@ stages:
   data_label:
     cmd: python src/stages/data_label.py --config=params.yaml
     deps:
-    - path: data/raw/gee.csv
-      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
-      size: 579647
+    - path: data/processed/gee_clouds.csv
+      md5: 17f620c02818e0358c31ae09e430c852
+      size: 200953
     - path: data/raw/vigi.csv
       md5: 8392e8b0a441178b1c2f442aca8b2f44
       size: 1528947
     - path: src/stages/data_label.py
-      md5: 38c68645f6829f4e942095e55dba2136
-      size: 1466
+      md5: fda43231aac580e8be41bf17e6abc3db
+      size: 1436
     params:
       params.yaml:
         base:
@@ -42,7 +42,7 @@ stages:
           log_level: INFO
         data_create:
           buffer_metros: 75
-          delta_dias: 2
+          delta_dias: 3
           latitude: -30.012175
           longitude: -51.215679
           nome_eta: MOINHOS DE VENTO
@@ -73,29 +73,42 @@ stages:
           - B11_median
           - B12_median
           selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
           - B3_B4
-          - NDVI_median
-          - B5_B4
-          - NDCI_median
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
           - B5B3_B2
-          - B5_B2
-          poly_degree: 3
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
     outs:
     - path: data/raw/labeled_data.csv
-      md5: 1f11a8310a855e557bc502279a98ce8c
-      size: 11211
+      md5: ebbfc0753a00e5d80b9bedc8c6517baa
+      size: 11640
   data_split:
     cmd: python src/stages/data_split.py --config=params.yaml
     deps:
-    - path: data/raw/labeled_data.csv
-      md5: 1f11a8310a855e557bc502279a98ce8c
-      size: 11211
+    - path: data/processed/df_fts.csv
+      md5: eedfcb1791636635e747b2ce8b5dc7aa
+      size: 26584
     - path: src/data/preprocess.py
-      md5: 4dfb85ec88e02610811f3dabea0280d0
-      size: 1542
+      md5: e606d4c36154e0b9920c25fd7bb7910b
+      size: 2209
     - path: src/stages/data_split.py
-      md5: c12cd95a9a7c591e4d35ef6a6cf5d269
-      size: 1130
+      md5: c85aa57a6621aea57442e7a1e2d7bca2
+      size: 1010
     params:
       params.yaml:
         base:
@@ -129,35 +142,48 @@ stages:
           - B11_median
           - B12_median
           selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
           - B3_B4
-          - NDVI_median
-          - B5_B4
-          - NDCI_median
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
           - B5B3_B2
-          - B5_B2
-          poly_degree: 3
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
     outs:
     - path: data/processed/test.csv
-      md5: 27ec3e3c2b3e61da14b5befb6c025466
-      size: 6371
+      md5: fa6f6ddfd6fe9c3a8645ffba75786bac
+      size: 7239
     - path: data/processed/train.csv
-      md5: 8cc02f7fa3b9eea39e5011c7a9a32af3
-      size: 11729
+      md5: e8a85cce37e3ac60424006804af4f0e2
+      size: 18355
   train:
     cmd: python src/stages/train.py --config=params.yaml
     deps:
     - path: data/processed/test.csv
-      md5: 27ec3e3c2b3e61da14b5befb6c025466
-      size: 6371
+      md5: fa6f6ddfd6fe9c3a8645ffba75786bac
+      size: 7239
     - path: data/processed/train.csv
-      md5: 8cc02f7fa3b9eea39e5011c7a9a32af3
-      size: 11729
+      md5: e8a85cce37e3ac60424006804af4f0e2
+      size: 18355
     - path: src/stages/train.py
-      md5: c1943c12f9a21fc4b647e01ff2f657c6
-      size: 2356
+      md5: 3bc78142e0dfbc7792473d454fdd5208
+      size: 2006
     - path: src/train/train_model.py
-      md5: 4144b68907188bd05fd7a91c5e364d42
-      size: 5792
+      md5: a02c3acbf6010fa84e87f10732f8fff7
+      size: 5624
     params:
       params.yaml:
         base:
@@ -186,21 +212,34 @@ stages:
           - B11_median
           - B12_median
           selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
           - B3_B4
-          - NDVI_median
-          - B5_B4
-          - NDCI_median
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
           - B5B3_B2
-          - B5_B2
-          poly_degree: 3
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
         mlflow_config:
-          experiment_name: baselines
+          experiment_name: change_days
         train:
           estimator_name: ridge
           estimators:
             ridge:
               params:
-                alpha: 30
+                alpha: 0.005
             xgboost:
               params:
                 n_estimators: 1000
@@ -220,8 +259,8 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/model.joblib
-      md5: f39e3f23e0cd611d82e88c593d79b18c
-      size: 8034
+      md5: 2c3fb9ed9054de3ec12b12c121b6080d
+      size: 2671
   evaluate:
     cmd: python src/stages/evaluate.py --config=params.yaml
     deps:
@@ -311,14 +350,14 @@ stages:
     cmd: python src/stages/train_full_data.py --config=params.yaml
     deps:
     - path: data/raw/labeled_data.csv
-      md5: 1f11a8310a855e557bc502279a98ce8c
-      size: 11211
+      md5: ebbfc0753a00e5d80b9bedc8c6517baa
+      size: 11640
     - path: models/model.joblib
-      md5: f39e3f23e0cd611d82e88c593d79b18c
-      size: 8034
+      md5: 2c3fb9ed9054de3ec12b12c121b6080d
+      size: 2671
     - path: src/stages/train_full_data.py
-      md5: 14c7cc5ad2c446a2bada33ec4377e003
-      size: 1768
+      md5: 5fb6472808097bf32239e8556f96e66f
+      size: 1616
     params:
       params.yaml:
         base:
@@ -348,21 +387,34 @@ stages:
           - B11_median
           - B12_median
           selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
           - B3_B4
-          - NDVI_median
-          - B5_B4
-          - NDCI_median
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
           - B5B3_B2
-          - B5_B2
-          poly_degree: 3
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
         mlflow_config:
-          experiment_name: baselines
+          experiment_name: change_days
         train:
           estimator_name: ridge
           estimators:
             ridge:
               params:
-                alpha: 30
+                alpha: 0.005
             xgboost:
               params:
                 n_estimators: 1000
@@ -382,23 +434,23 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: models/full_model.joblib
-      md5: d546dc086827794ad9cba64aadd5d7dd
-      size: 3080
+      md5: 5670b6f7ec68cc72a2af5e4eb1078852
+      size: 2773
     - path: reports/metrics.json
-      md5: 09c7db4fcf4def314142de0ca742d83b
-      size: 63
+      md5: ed4b0acae1f38ee9fd6a46dbec220fe8
+      size: 62
   predictions:
     cmd: python src/stages/predictions.py --config=params.yaml
     deps:
-    - path: data/raw/gee.csv
-      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
-      size: 579647
+    - path: data/processed/gee_clouds.csv
+      md5: 17f620c02818e0358c31ae09e430c852
+      size: 200953
     - path: models/full_model.joblib
-      md5: d546dc086827794ad9cba64aadd5d7dd
-      size: 3080
+      md5: 5670b6f7ec68cc72a2af5e4eb1078852
+      size: 2773
     - path: src/stages/predictions.py
-      md5: 511b2172e22089df0eaa3d86cfd2ab5c
-      size: 1435
+      md5: 5d08e4be17a011d0928071739d041b35
+      size: 1483
     params:
       params.yaml:
         base:
@@ -428,19 +480,32 @@ stages:
           - B11_median
           - B12_median
           selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
           - B3_B4
-          - NDVI_median
-          - B5_B4
-          - NDCI_median
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
           - B5B3_B2
-          - B5_B2
-          poly_degree: 3
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
         train:
           estimator_name: ridge
           estimators:
             ridge:
               params:
-                alpha: 30
+                alpha: 0.005
             xgboost:
               params:
                 n_estimators: 1000
@@ -460,5 +525,117 @@ stages:
           full_model_path: models/full_model.joblib
     outs:
     - path: data/predictions/predicted.csv
-      md5: 79e4b3fa6bd8a3a072b1233e38d25b8c
-      size: 10482
+      md5: 3eb68f561f55362ca270357c5b591c01
+      size: 8466
+  data_clean:
+    cmd: python src/stages/data_clean.py --config=params.yaml
+    deps:
+    - path: data/raw/gee.csv
+      md5: f0a7c3e9f7bbfb32a3b9153e8c8911ed
+      size: 579647
+    - path: src/data/clean_gee.py
+      md5: a1728a5c269c938cd0015629b57b3ec8
+      size: 3606
+    - path: src/stages/data_clean.py
+      md5: e5b5601a499720aed350f3f6692c2d0e
+      size: 2797
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        data_create:
+          buffer_metros: 75
+          delta_dias: 3
+          latitude: -30.012175
+          longitude: -51.215679
+          nome_eta: MOINHOS DE VENTO
+          municipio: PORTO ALEGRE
+          manancial: GUAIBA
+          url: https://sage.saude.gov.br/dados/sisagua/controle_mensal_demais_parametros.zip
+        gee_clean:
+          train_new_clf: true
+          imgs_com_nuvens:
+          - '2019-06-17'
+          - '2020-08-07'
+          - '2020-12-28'
+          - '2021-01-22'
+          - '2022-01-19'
+          kmeans:
+            n_clusters: 6
+            clean_cluster: 0
+          classifier:
+            clf_name: logit
+            clf_path: models/cloud_clf.joblib
+            clf_performance: report/cloud_clf.json
+          clean_data_path: data/processed/gee_clouds.csv
+    outs:
+    - path: data/processed/gee_clouds.csv
+      md5: 17f620c02818e0358c31ae09e430c852
+      size: 200953
+    - path: models/cloud_clf.joblib
+      md5: 06fae16f5ddb9f36dcb7dde3f9bec663
+      size: 2632
+    - path: report/cloud_clf.json
+      md5: ac61626eff29386438e73241c7dc0640
+      size: 80
+  feat_eng:
+    cmd: python src/stages/feat_eng.py --config=params.yaml
+    deps:
+    - path: data/raw/labeled_data.csv
+      md5: ebbfc0753a00e5d80b9bedc8c6517baa
+      size: 11640
+    - path: src/data/preprocess.py
+      md5: e606d4c36154e0b9920c25fd7bb7910b
+      size: 2209
+    - path: src/stages/feat_eng.py
+      md5: aacea6aee2419160054f388f438f47a6
+      size: 1342
+    params:
+      params.yaml:
+        base:
+          random_state: 42
+          log_level: INFO
+        featurize:
+          target_column: Resultado
+          selected_clean_columns:
+          - date
+          - NDVI_median
+          - NDCI_median
+          - B1_median
+          - B2_median
+          - B3_median
+          - B4_median
+          - B5_median
+          - B6_median
+          - B7_median
+          - B8_median
+          - B8A_median
+          - B9_median
+          - B11_median
+          - B12_median
+          selected_features:
+          - B1_median B5B3_B2
+          - B3_B2 B5B3_B2
+          - B3_B4
+          - B3_B4 B5B3_B2
+          - B4_median B3_B2
+          - B4_median B5B3_B2
+          - B5B3_B2
+          - B5B3_B2^2
+          - B5_B4^2
+          - B5_median B5B3_B2
+          - B6_median^2
+          - B8A_median B5B3_B2
+          - B9_median B3_B4
+          - B9_median B5B3_B2
+          - B11_median^2
+          - delta_days
+          - NDCI_median B5_B4
+          - NDVI_median B5_B2
+          poly_degree: 2
+          ft_data_path: data/processed/df_fts.csv
+    outs:
+    - path: data/processed/df_fts.csv
+      md5: eedfcb1791636635e747b2ce8b5dc7aa
+      size: 26584

@@ -3,9 +3,8 @@ from typing import Text
 
 import pandas as pd
 import yaml
-from src.data import preprocess
 
-from src.data.label_gee import get_intervals, load_data
+from src.data import label_gee, preprocess
 from src.utils.logs import get_logger
 
 
@@ -16,28 +15,27 @@ def data_label(config_path: Text) -> None:
 
     logger = get_logger("DATA_LABEL", log_level=config["base"]["log_level"])
 
-    gee, ciano_labels = load_data(config)
-    gee["interval"] = get_intervals(gee["date"], min(gee["date"]), config)
+    gee, ciano_labels = label_gee.load_data(config)
+    gee["interval"] = label_gee.get_intervals(gee["date"], min(gee["date"]), config)
 
     logger.info(
         f"Labeling the data ({config['data_create']['delta_dias']}-day interval)"
     )
-    ciano_labels["interval"] = get_intervals(
+    ciano_labels["interval"] = label_gee.get_intervals(
         ciano_labels["Data da coleta"], min(gee["date"]), config
     )
     df = pd.merge(gee, ciano_labels, on="interval")
 
-    logger.info("Clean and select columns")
+    logger.info("Select columns")
     selected_columns = config["featurize"]["selected_clean_columns"] + [
         config["featurize"]["target_column"],
         "Data da coleta",
         "interval",
     ]
-
-    labeled_df = preprocess.clean_data(df)
+    labeled_df = df[selected_columns]
 
     logger.info("Save the labeled data")
-    labeled_df[selected_columns].to_csv(config["data_load"]["labeled_df"], index=False)
+    labeled_df.to_csv(config["data_load"]["labeled_df"], index=False)
 
 
 if __name__ == "__main__":

@@ -1,11 +1,9 @@
-import smogn
-import pandas as pd
 from typing import Union
-from dateutil.relativedelta import relativedelta
 
-# poly
-# transformer
-# feature selection
+import pandas as pd
+import smogn
+from dateutil.relativedelta import relativedelta
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def oversampling(df_train, config):
@@ -24,13 +22,6 @@ def create_ratios(df: pd.DataFrame) -> pd.DataFrame:
     df["B5B3_B2"] = (df["B5_median"] + df["B3_median"]) / df["B2_median"]
 
     return df
-
-
-def clean_data(df):
-
-    return df.loc[
-        (df["NDVI_median"] < -0.05) & (df["B1_median"] < 0.5) & (df["B2_median"] < 0.6)
-    ]
 
 
 def train_test_split_ts(
@@ -56,6 +47,28 @@ def train_test_split_ts(
     return df_train, df_test
 
 
-def create_delta_days(df):
+def create_delta_days(df: pd.DataFrame) -> pd.DataFrame:
     # Add a column with day difference between S2A and SISAGUA
-    pass
+    df["delta_days"] = (
+        pd.to_datetime(df["date"]) - pd.to_datetime(df["Data da coleta"])
+    ).dt.days
+
+    return df
+
+
+def create_poly_features(df: pd.DataFrame, config: dict, labeled=True) -> pd.DataFrame:
+
+    poly = PolynomialFeatures(
+        degree=config["featurize"]["poly_degree"], include_bias=False
+    )
+    if labeled:
+        target_ids = df[["date", "Resultado", "Data da coleta", "interval"]]
+        X = df.drop(columns=["date", "Resultado", "Data da coleta", "interval"])
+    else:
+        target_ids = df[["date"]]
+        X = df.drop(columns="date")
+
+    X_poly = poly.fit_transform(X)
+    X_poly = pd.DataFrame(X_poly, columns=poly.get_feature_names(X.columns))
+
+    return pd.concat([target_ids, X_poly], axis=1)

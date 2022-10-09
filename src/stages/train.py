@@ -1,9 +1,9 @@
 import argparse
-from typing import Text
+import json
 import tempfile
 from pathlib import Path
+from typing import Text
 
-import json
 import joblib
 import mlflow
 import pandas as pd
@@ -28,13 +28,7 @@ def train(config_path: Text):
     # Load labeled data
     df = pd.read_csv(config["data_load"]["labeled_df"])
 
-    # Create features and clean
-    df = preprocess.clean_data(df)
-    df = preprocess.create_ratios(df)
-
     # Train
-   # mlflow.set_tracking_uri("file:///" +  "mlruns")
-    #mlflow.create_experiment(experiment_name=config["mlflow_config"]["experiment_name"], artifact_location='mlruns/')
     mlflow.set_experiment(experiment_name=config["mlflow_config"]["experiment_name"])
     with mlflow.start_run(run_name=config["train"]["estimator_name"]):
         run_id = mlflow.active_run().info.run_id
@@ -50,10 +44,13 @@ def train(config_path: Text):
 
         # Log artifacts
         with tempfile.TemporaryDirectory() as dp:
-            joblib.dump(artifacts["tscv"], Path(dp, "tscv.pkl"))
             joblib.dump(artifacts["model"], Path(dp, "model.pkl"))
-            train_model.save_dict(artifacts["performance"], Path(dp, "performance.json"))
-            artifacts["pred_vs_true_plot"].write_image(Path(dp, "pred_vs_true_plot.png"))
+            train_model.save_dict(
+                artifacts["performance"], Path(dp, "performance.json")
+            )
+            artifacts["pred_vs_true_plot"].write_image(
+                Path(dp, "pred_vs_true_plot.png")
+            )
             mlflow.log_artifacts(dp)
 
     logger.info("Save model")

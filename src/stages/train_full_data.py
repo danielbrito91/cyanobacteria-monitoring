@@ -2,11 +2,10 @@ import argparse
 from typing import Text
 
 import joblib
-import json
 import pandas as pd
 import yaml
-from src.data import preprocess
 
+from src.data import preprocess
 from src.train import train_model
 from src.utils import logs
 
@@ -21,11 +20,7 @@ def train_on_full_dataset(config_path: Text) -> None:
     logger.info("Load full dataset")
     selected_cols = config["featurize"]["selected_features"]
     target = config["featurize"]["target_column"]
-    full_df = pd.read_csv(config["data_load"]["labeled_df"])
-
-    logger.info("Preprocess full dataset")
-    full_df = preprocess.clean_data(full_df)
-    full_df = preprocess.create_ratios(full_df)
+    full_df = pd.read_csv(config["featurize"]["ft_data_path"])
 
     # id = full_df[["date", "Data da coleta"]]
     X_full = full_df[selected_cols]
@@ -44,7 +39,9 @@ def train_on_full_dataset(config_path: Text) -> None:
     joblib.dump(trained_model, config["train"]["full_model_path"])
 
     logger.info("Save other artifacts")
-    train_model.save_dict(best_regressor_artifacts["performance"], config["evaluate"]["metrics_file"])
+    train_model.save_dict(
+        best_regressor_artifacts["performance"], config["evaluate"]["metrics_file"]
+    )
 
 
 if __name__ == "__main__":

@@ -5,9 +5,8 @@ import joblib
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
-from src.data import preprocess
 
+from src.data import preprocess
 from src.utils.logs import get_logger
 
 
@@ -23,15 +22,17 @@ def predict_cyano(config_path: Text) -> None:
     model = joblib.load(model_path)
 
     logger.info("Load S2A dataset")
-    gee = pd.read_csv(config["data_load"]["s2a_df"])
+    gee = pd.read_csv(config["gee_clean"]["clean_data_path"])
 
-    gee = preprocess.clean_data(gee)
-    gee = preprocess.create_ratios(gee)
+    logger.info("Create features")
+    gee_fts = preprocess.create_ratios(gee)
+    gee_fts["delta_days"] = 0
+    gee_fts = preprocess.create_poly_features(gee_fts, config, labeled=False)
 
-    id = gee["date"]
+    id = gee_fts["date"]
 
     selected_cols = config["featurize"]["selected_features"]
-    X = gee[selected_cols]
+    X = gee_fts[selected_cols]
 
     logger.info("Predict")
     y_pred = model.predict(X)

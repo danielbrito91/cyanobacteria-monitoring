@@ -22,7 +22,6 @@ region = create_region(lat, lon, buffer_size)
 
 def reduce(img):
     """Extrai média, mediana, mínimo, máximo e desvio padrão de uma banda"""
-
     serie_reduce = img.reduceRegions(
         **{
             "collection": region,
@@ -44,7 +43,6 @@ def reduce(img):
 
 def create_df(img, band):
     """Cria um dataframe para dados extraidos de imageCollection"""
-
     reduced_img = (
         img.select(band)
         .map(reduce)

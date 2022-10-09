@@ -8,8 +8,8 @@ earthengine authenticate
 ```
 Bash
 ```
-echo "export PYTHONPATH=$PWD" >> dvc-venv/bin/activate
-source dvc-venv/bin/activate
+export PYTHONPATH=$PWD
+source venv/Scripts/activate
 ```
 
 ```

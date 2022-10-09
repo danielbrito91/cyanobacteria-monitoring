@@ -1,12 +1,12 @@
+import json
 import tempfile
 from pathlib import Path
 from typing import Dict
 
 import joblib
-import json
 import mlflow
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.express as px
 from dateutil.relativedelta import relativedelta
 from sklearn.compose import TransformedTargetRegressor
@@ -63,10 +63,10 @@ def train_model(
         config["data_split"]["trainset_path"]
     ), pd.read_csv(config["data_split"]["testset_path"])
     target_column = config["featurize"]["target_column"]
-    selected_columns = config["featurize"]["selected_clean_columns"]
+    selected_columns = config["featurize"]["selected_features"]
 
     id_test = df_test[["date", "Data da coleta"]]
-    X_test = df_test[selected_columns].drop(columns="date")
+    X_test = df_test[selected_columns]
     y_test = df_test[target_column]
 
     # Model
@@ -77,17 +77,12 @@ def train_model(
     params = config["train"]["estimators"][estimator_name]["params"]
 
     regressor = estimators[estimator_name](**params)
-    poly = PolynomialFeatures(
-        degree=config["featurize"]["poly_degree"], include_bias=False
-    )
-    poly_reg = Pipeline([("poly", poly), ("regressor", regressor)])
-
     model = TransformedTargetRegressor(
-        regressor=poly_reg, transformer=PowerTransformer(method="yeo-johnson")
+        regressor=regressor, transformer=PowerTransformer(method="yeo-johnson")
     )
 
     # TS Cross-Validation - optuna
-    tscv = TimeSeriesSplit(n_splits=3)
+    """tscv = TimeSeriesSplit(n_splits=2)
     for train_index, val_index in tscv.split(df_train_val):
         df_train, df_val = df_train_val.iloc[train_index], df_train_val.iloc[val_index]
 
@@ -105,11 +100,11 @@ def train_model(
 
         # Validation eval
         print(mean_absolute_error(y_val, y_pred))
-
+"""
     # Evaluation on test
     df_train_over = preprocess.oversampling(df_train_val, config)
     model.fit(
-        df_train_over[selected_columns].drop(columns="date"),
+        df_train_over[selected_columns],
         df_train_over[target_column],
     )
     y_pred = model.predict(X_test)
@@ -134,7 +129,7 @@ def train_model(
 
     return {
         "model": model,
-        "tscv": tscv,
+        # "tscv": tscv,
         "performance": performance,
         "params": params,
         "pred_vs_true_plot": predicted_vs_true_plot,
@@ -145,15 +140,18 @@ def simple_heuristic_baseline():
     # Model with only one feature: the month of the measure
     pass
 
+
 def save_dict(d, filepath):
     with open(filepath, "w") as fp:
         json.dump(d, indent=2, sort_keys=False, fp=fp)
+
 
 def load_dict(filepath):
     """Load a dict from a json file."""
     with open(filepath, "r") as fp:
         d = json.load(fp)
     return d
+
 
 def get_best_model(experiment_name: str) -> dict:
     """Get the artifacts from the best model
@@ -165,19 +163,17 @@ def get_best_model(experiment_name: str) -> dict:
         dict: model (model.pkl object), "performance"
         (dict containing metrics of the best model)
     """
-    #mlflow.set_tracking_uri("file:///" +  "mlruns")
+    # mlflow.set_tracking_uri("file:///" +  "mlruns")
     experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
     experiment_runs = mlflow.search_runs(
         experiment_ids=experiment_id, order_by=["metrics.mae"]
     )
     best_run_id = experiment_runs.iloc[0].run_id
+    # best_run = mlflow.get_run(run_id=best_run_id)
     client = mlflow.tracking.MlflowClient()
     with tempfile.TemporaryDirectory() as dp:
         client.download_artifacts(run_id=best_run_id, path="", dst_path=dp)
         model = joblib.load(Path(dp, "model.pkl"))
         performance = load_dict(filepath=Path(dp, "performance.json"))
-        
-    return {
-        "model": model,
-        "performance": performance
-    }
+
+    return {"model": model, "performance": performance}

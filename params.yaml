@@ -4,8 +4,8 @@ base:
 
 data_create:
   # Parametros para criar o dataset
-  buffer_metros: 75
-  delta_dias: 2
+  buffer_metros: 75 #150
+  delta_dias: 3
   latitude: -30.012175
   longitude: -51.215679
   nome_eta: "MOINHOS DE VENTO"
@@ -19,10 +19,23 @@ data_load:
   labels_df: "data/raw/vigi.csv"
   labeled_df: "data/raw/labeled_data.csv"
 
-data_split:
-  trainset_path: "data/processed/train.csv"
-  testset_path: "data/processed/test.csv"
-  years_split_test: 1
+gee_clean:
+  train_new_clf: True
+  imgs_com_nuvens: [
+    "2019-06-17",
+    "2020-08-07",
+    "2020-12-28",
+    "2021-01-22",
+    "2022-01-19",
+    ]
+  kmeans:
+    n_clusters: 6
+    clean_cluster: 0
+  classifier:
+    clf_name: logit
+    clf_path: "models/cloud_clf.joblib"
+    clf_performance: "reports/cloud_clf.json"
+  clean_data_path: "data/processed/gee_clouds.csv"
 
 featurize:
   target_column: "Resultado"
@@ -43,18 +56,42 @@ featurize:
         'B11_median',
         'B12_median'
         ]
-  selected_features: ["B3_B4", "NDVI_median", "B5_B4", "NDCI_median", "B5B3_B2", "B5_B2"]
-  poly_degree: 3
+  selected_features: [
+    "B1_median B5B3_B2" ,
+    "B3_B2 B5B3_B2" ,
+    "B3_B4" ,
+    "B3_B4 B5B3_B2" ,
+    "B4_median B3_B2" ,
+    "B4_median B5B3_B2" ,
+    "B5B3_B2" ,
+    "B5B3_B2^2" ,
+    "B5_B4^2" ,
+    "B5_median B5B3_B2" ,
+    "B6_median^2" ,
+    "B8A_median B5B3_B2" ,
+    "B9_median B3_B4" ,
+    "B9_median B5B3_B2" ,
+    "B11_median^2",
+    "delta_days",
+    "NDCI_median B5_B4" ,
+    "NDVI_median B5_B2"]
+  poly_degree: 2
+  ft_data_path: "data/processed/df_fts.csv"
+
+data_split:
+  trainset_path: "data/processed/train.csv"
+  testset_path: "data/processed/test.csv"
+  years_split_test: 1
 
 mlflow_config:
-  experiment_name: "baselines"
+  experiment_name: "change_days"
 
 train:
   estimator_name: ridge
   estimators:
     ridge:
       params:
-        alpha: 30 #30
+        alpha: 0.005
     xgboost:
       params:
         n_estimators: 1000

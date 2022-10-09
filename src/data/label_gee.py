@@ -7,8 +7,8 @@ import pandas as pd
 def load_data(config):
     nome_eta = config["data_create"]["nome_eta"]
 
-    gee = pd.read_csv(config["data_load"]["s2a_df"])
-    gee["date"] = pd.to_datetime(gee["date"]).dt.date
+    gee_clean = pd.read_csv(config["gee_clean"]["clean_data_path"])
+    gee_clean["date"] = pd.to_datetime(gee_clean["date"]).dt.date
 
     vigi = pd.read_csv(config["data_load"]["labels_df"])
 
@@ -20,7 +20,7 @@ def load_data(config):
     ]
 
     ciano_labels = ciano_vigi.loc[
-        pd.to_datetime(ciano_vigi["Data da coleta"]).dt.date >= min(gee["date"])
+        pd.to_datetime(ciano_vigi["Data da coleta"]).dt.date >= min(gee_clean["date"])
     ]
     ciano_labels.loc[:, "Data da coleta"] = pd.to_datetime(
         ciano_labels["Data da coleta"]
@@ -28,7 +28,7 @@ def load_data(config):
     ciano_labels.loc[:, "Resultado"] = pd.to_numeric(ciano_labels["Resultado"])
     ciano_labels = ciano_labels.sort_values(by=["Data da coleta"])
 
-    return gee, ciano_labels
+    return gee_clean, ciano_labels
 
 
 def get_intervals(date_column, first_date, config):
