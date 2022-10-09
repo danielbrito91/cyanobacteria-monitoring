@@ -13,7 +13,32 @@ config_version: 3.0
 # Datasources tell Great Expectations where your data lives and how to get it.
 # You can use the CLI command `great_expectations datasource new` to help you
 # add a new datasource. Read more at https://docs.greatexpectations.io/docs/guides/connecting_to_your_data/connect_to_data_overview
-datasources: {}
+datasources:
+  cyanobacteria:
+    module_name: great_expectations.datasource
+    data_connectors:
+      default_inferred_data_connector_name:
+        glob_directive: "*"
+        default_regex:
+          group_names:
+            - data_asset_name
+          pattern: (.*)
+        module_name: great_expectations.datasource.data_connector
+        class_name: InferredAssetFilesystemDataConnector
+        base_directory: ../../data/
+      default_runtime_data_connector_name:
+        module_name: great_expectations.datasource.data_connector
+        class_name: RuntimeDataConnector
+        assets:
+          my_runtime_asset_name:
+            module_name: great_expectations.datasource.data_connector.asset
+            batch_identifiers:
+              - runtime_batch_identifier_name
+            class_name: Asset
+    class_name: Datasource
+    execution_engine:
+      module_name: great_expectations.execution_engine
+      class_name: PandasExecutionEngine
 
 # This config file supports variable substitution which enables: 1) keeping
 # secrets out of source control & 2) environment-based configuration changes
@@ -98,7 +123,7 @@ anonymous_usage_statistics:
   enabled: true
   data_context_id: d8f1d9fb-02a5-4aee-9162-9b3869d7e778
 include_rendered_content:
-  globally: false
   expectation_suite: false
   expectation_validation_result: false
+  globally: false
 notebooks:

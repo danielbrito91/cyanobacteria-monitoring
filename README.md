@@ -16,6 +16,4 @@ source venv/Scripts/activate
 streamlit run
 ```
 
-set PYTHONPATH=%cd%
-
 dvc remote add s3-remote s3://cyano
