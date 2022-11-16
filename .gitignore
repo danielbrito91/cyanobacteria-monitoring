@@ -11,3 +11,5 @@ mlruns/
 
 # VSCcode
 .vscode
+
+.env
