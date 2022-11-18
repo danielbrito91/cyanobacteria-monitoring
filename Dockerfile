@@ -11,11 +11,12 @@ RUN python3 -m pip install --upgrade pip\
 COPY src src
 COPY app.py app.py
 COPY params.yaml params.yaml
-COPY dvc.yaml dvc.yaml
+COPY dvc.yaml dvc.yamld
 
 
 RUN dvc remote modify cyanomonit access_key_id ${aws_access_key_id}
 RUN dvc remote modify cyanomonit secret_access_key ${aws_secret_access_key}
+RUN dvc fetch
 RUN dvc pull --remote cyanomonit
 RUN dvc repro
 
