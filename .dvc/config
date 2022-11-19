@@ -1,4 +1,0 @@
-[core]
-    remote = cyanomonit
-['remote "cyanomonit"']
-    url = s3://cyano

@@ -13,3 +13,5 @@ mlruns/
 .vscode
 
 .env
+
+.pytest_cache
