@@ -17,7 +17,7 @@ def plot_predicted_values(config_path: Text):
 
     _, ciano = label_gee.load_data(config)
 
-    gee_plot = go.Scatter(x=pred["date"], y=pred["y_pred"], name="Predicted values")
+    gee_plot = go.Scatter(x=pred["date"], y=pred["y_pred"], name="Predicted values", mode="markers")
 
     vigi_plot = go.Scatter(
         x=ciano["Data da coleta"], y=ciano["Resultado"], mode="markers", name="SISAGUA"

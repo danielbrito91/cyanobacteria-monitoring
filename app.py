@@ -30,14 +30,14 @@ def convert_df(df):
     return df.to_csv().encode("utf-8")
 
 
-csv = convert_df(predicted_values)
+#csv = convert_df(predicted_values)
 
-st.download_button(
-    label="Download predictions as CSV",
-    data=csv,
-    file_name="predictions.csv",
-    mime="text/csv",
-)
+#st.download_button(
+#    label="Download predictions as CSV",
+#    data=csv,
+#    file_name="predictions.csv",
+#    mime="text/csv",
+#)
 
 st.header("About the project")
 

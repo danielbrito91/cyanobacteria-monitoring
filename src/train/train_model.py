@@ -104,8 +104,8 @@ def train_model(
     # Evaluation on test
     df_train_over = preprocess.oversampling(df_train_val, config)
     model.fit(
-        df_train_over[selected_columns],
-        df_train_over[target_column],
+        df_train_val[selected_columns],
+        df_train_val[target_column],
     )
     y_pred = model.predict(X_test)
     y_pred = np.where(y_pred < 0, 0, y_pred)

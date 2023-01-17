@@ -11,7 +11,7 @@ RUN python3 -m pip install --upgrade pip\
 COPY src src
 COPY app.py app.py
 COPY params.yaml params.yaml
-COPY dvc.yaml dvc.yamld
+COPY dvc.yaml dvc.yaml
 
 
 RUN dvc remote modify cyanomonit access_key_id ${aws_access_key_id}

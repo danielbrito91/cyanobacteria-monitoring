@@ -34,14 +34,12 @@ def hard_code_cluster(clusters_fts, config) -> pd.DataFrame:
             )
         ),
         "labels",
-    ] = (
-        config["gee_clean"]["kmeans"]["clean_cluster"] + 1
-    )
+    ] = 1
 
     return clusters_fts
 
 
-def split_data_cloud(clusters_fts: pd.DataFrame, clean_cluster: int):
+def split_data_cloud(clusters_fts: pd.DataFrame, clean_cluster: list):
 
     gee_train = clusters_fts.loc[
         pd.to_datetime(clusters_fts["date"]) <= pd.to_datetime("2021-07-01")
@@ -52,8 +50,8 @@ def split_data_cloud(clusters_fts: pd.DataFrame, clean_cluster: int):
 
     X_train = gee_train.iloc[:, 2:]
     X_test = gee_test.iloc[:, 2:]
-    y_train = (gee_train["labels"] == clean_cluster) * 1
-    y_test = (gee_test["labels"] == clean_cluster) * 1
+    y_train = (gee_train["labels"].isin(clean_cluster)) * 1
+    y_test = (gee_test["labels"].isin(clean_cluster)) * 1
 
     return X_train, X_test, y_train, y_test
 
@@ -127,5 +125,6 @@ def plot_img(data_examinada, config, n_days=7):
     ms = s2a_img.first().date().millis().getInfo()
 
     print(datetime.datetime.fromtimestamp(ms / 1000.0))
+
 
     return Map

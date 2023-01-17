@@ -48,9 +48,9 @@ def train(config_path: Text):
             train_model.save_dict(
                 artifacts["performance"], Path(dp, "performance.json")
             )
-            artifacts["pred_vs_true_plot"].write_image(
-                Path(dp, "pred_vs_true_plot.png")
-            )
+           # artifacts["pred_vs_true_plot"].write_image(
+           #Path(dp, "pred_vs_true_plot.png")
+           #)
             mlflow.log_artifacts(dp)
 
     logger.info("Save model")

@@ -16,4 +16,5 @@ mlruns/
 
 .pytest_cache
 data/.
-/data
+
+!*.dvc 

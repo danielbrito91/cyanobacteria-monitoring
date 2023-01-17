@@ -4,8 +4,8 @@ base:
 
 data_create:
   # Parametros para criar o dataset
-  buffer_metros: 75 #150
-  delta_dias: 3
+  buffer_metros: 150
+  delta_dias: 2
   latitude: -30.012175
   longitude: -51.215679
   nome_eta: "MOINHOS DE VENTO"
@@ -30,7 +30,7 @@ gee_clean:
     ]
   kmeans:
     n_clusters: 6
-    clean_cluster: 0
+    clean_cluster: [5]
   classifier:
     clf_name: logit
     clf_path: "models/cloud_clf.joblib"
