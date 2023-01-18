@@ -1,24 +1,25 @@
 # Base image
-FROM python:3.10
+FROM python:3.10-slim
 
 # Install depedencies
 WORKDIR /cyanobateria-monitoring
-COPY requirements.txt requirements.txt
-COPY .dvc .dvc
+COPY requirements/prod_req.txt requirements.txt
 RUN python3 -m pip install --upgrade pip\
     && pip install -r requirements.txt
 
-COPY src src
+COPY src/ src/
 COPY app.py app.py
+COPY data/ data/
+COPY reports/metrics.json reports/metrics.json
 COPY params.yaml params.yaml
-COPY dvc.yaml dvc.yaml
+#COPY dvc.yaml dvc.yaml
 
 
-RUN dvc remote modify cyanomonit access_key_id ${aws_access_key_id}
-RUN dvc remote modify cyanomonit secret_access_key ${aws_secret_access_key}
-RUN dvc fetch
-RUN dvc pull --remote cyanomonit
-RUN dvc repro
+#RUN dvc init --no-scm -f
+#RUN dvc fetch
+#RUN dvc remote add -d storage data
+#RUN dvc pull
+#RUN dvc repro
 
 EXPOSE 8501
 
