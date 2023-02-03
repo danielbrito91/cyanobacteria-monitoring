@@ -13,4 +13,4 @@ setuptools==65.4.1
 smogn==0.1.2
 streamlit==1.12.2
 xgboost==1.6.2
-pyyaml 
+PyYAML==6.0
