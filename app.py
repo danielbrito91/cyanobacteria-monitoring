@@ -11,7 +11,10 @@ st.title("Cyanobacteria Monitoring - Guaíba Lake")
 with open("params.yaml") as config_file:
     config = yaml.safe_load(config_file)
 
-predicted_values = pd.read_csv(config["evaluate"]["final_predictions_file"])
+sheet_pred = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0"
+url_pred = sheet_pred.replace('/edit#gid=', '/export?format=csv&gid=')
+
+predicted_values = pred = pd.read_csv(url_pred, encoding="latin1", decimal=",")
 last_value = predicted_values.tail(1)
 
 st.header("Last predicted value")
