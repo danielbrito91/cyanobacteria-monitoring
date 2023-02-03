@@ -19,3 +19,5 @@ data/.
 
 !*.dvc 
 /data
+
+config/service-account.json

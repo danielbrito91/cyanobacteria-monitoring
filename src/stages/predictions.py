@@ -6,9 +6,11 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from src.data import preprocess
+from src.data import preprocess, label_gee
 from src.utils.logs import get_logger
 
+import gspread as gs
+from gspread_dataframe import set_with_dataframe
 
 def predict_cyano(config_path: Text) -> None:
 
@@ -43,6 +45,33 @@ def predict_cyano(config_path: Text) -> None:
     logger.info("Save predicted data")
     df_predicted.to_csv(config["evaluate"]["final_predictions_file"], index=False)
 
+    logger.info("Export predictions to Google Sheets")
+
+    gc = gs.service_account(filename="config/service-account.json")
+    _, ciano = label_gee.load_data(config)
+
+    sh_pred = gc.open_by_url("https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0")
+    sh_ciano = gc.open_by_url("https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=1074409459")
+    
+    ws_pred = sh.worksheet("previsto")
+    ws_ciano = sh.worksheet("vigi")
+
+    ws_pred.clear()
+    ws_ciano.clear()
+
+    set_with_dataframe(
+        worksheet=ws_pred,
+        dataframe=df_predicted,
+        include_index=False,
+        include_column_header=True,
+        resize=True)
+    
+    set_with_dataframe(
+        worksheet=ws_ciano,
+        dataframe=ciano,
+        include_index=False,
+        include_column_header=True,
+        resize=True)
 
 if __name__ == "__main__":
 

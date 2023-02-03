@@ -13,9 +13,14 @@ def plot_predicted_values(config_path: Text):
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
-    pred = pd.read_csv(config["evaluate"]["final_predictions_file"])
+    sheet_pred = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0"
+    sheet_vigi = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=1074409459"
 
-    _, ciano = label_gee.load_data(config)
+    url_pred = sheet_pred.replace('/edit#gid=', '/export?format=csv&gid=')
+    url_vigi = sheet_vigi.replace('/edit#gid=', '/export?format=csv&gid=')
+
+    pred = pd.read_csv(url_pred, encoding="latin1", decimal=",")
+    ciano = pd.read_csv(url_vigi, encoding="latin1", decimal=",")
 
     gee_plot = go.Scatter(x=pred["date"], y=pred["y_pred"], name="Predicted values", mode="markers")
 
