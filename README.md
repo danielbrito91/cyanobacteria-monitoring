@@ -47,8 +47,8 @@ Para se realizar análise da série histórica das concentrações de cianobact�
     - ``XGBoost``
     - ``Streamlit``
  
-  - ``DVC``
-  - ``AWS S3``
+- ``DVC``
+- ``AWS S3``
 
 As seguintes bases de dados foram utilizadas no projeto:
 
