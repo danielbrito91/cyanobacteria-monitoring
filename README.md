@@ -11,7 +11,6 @@
 * [Descrição do Projeto](#descrição-do-projeto)
 * [Acesso ao projeto](#acesso-ao-projeto)
 * [Tecnologias utilizadas](#tecnologias-utilizadas)
-* [Tarefas em abert](#tarefas-em-aberto)
 * [Referências](#referências)
 
 Projeto desenvolvido na primeira etapa da mentoria [Alforriah](https://www.alforriah.com/).
