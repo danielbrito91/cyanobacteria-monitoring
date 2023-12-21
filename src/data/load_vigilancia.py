@@ -20,13 +20,17 @@ def load_vigilancia(config_path: Text) -> pd.DataFrame:
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
+    folder_path = "/".join(config["data_load"]["labels_download"].split("/")[:-1])
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
     if not os.path.isfile(config["data_load"]["labels_download"]):
         try:
             urllib.request.urlretrieve(
                 config["data_create"]["url"], config["data_load"]["labels_download"]
             )
         except Exception:
-            logger.exeption("Unable to download data from vigilancia")
+            logger.exception("Unable to download data from vigilancia")
 
     vigilancia = pd.read_csv(
         config["data_load"]["labels_download"],
