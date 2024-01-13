@@ -14,10 +14,16 @@ fs = s3fs.S3FileSystem()
 with open("params.yaml") as config_file:
     config = yaml.safe_load(config_file)
 
-last_pred_path = get_last_prediction_path(config, fs)
+@st.cache_data(ttl="48h")
+def load_data(config, fs):
+    last_pred_path = get_last_prediction_path(config, fs)
 
-predicted_values = pd.read_parquet(fs.open(last_pred_path))
-_, ciano = label_gee.load_data(config, fs)
+    predicted_values = pd.read_parquet(fs.open(last_pred_path))
+    _, ciano = label_gee.load_data(config, fs)
+
+    return predicted_values, ciano
+
+predicted_values, ciano = load_data(config, fs)
 last_value = predicted_values.tail(1)
 
 st.header("Last predicted value")
@@ -29,12 +35,6 @@ st.markdown(
 
 fig = plot_predicted_values(predicted_values, ciano, config)
 st.plotly_chart(fig, use_container_width=True)
-
-
-@st.cache
-def convert_df(df):
-    return df.to_csv().encode("utf-8")
-
 
 #csv = convert_df(predicted_values)
 
