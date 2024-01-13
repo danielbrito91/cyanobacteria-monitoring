@@ -4,6 +4,8 @@ import yaml
 import json
 import s3fs
 
+from datetime import datetime
+
 from src.data import label_gee
 from src.report.plot_predicted_values import plot_predicted_values, get_last_prediction_path
 
@@ -14,7 +16,7 @@ fs = s3fs.S3FileSystem()
 with open("params.yaml") as config_file:
     config = yaml.safe_load(config_file)
 
-@st.cache_data(ttl="48h")
+@st.cache_data(ttl=datetime.timedelta(hours=24))
 def load_data(config, fs):
     last_pred_path = get_last_prediction_path(config, fs)
 
