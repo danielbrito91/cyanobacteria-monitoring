@@ -1,5 +1,8 @@
+import os
+from datetime import date
 from typing import Text
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import yaml
@@ -8,21 +11,31 @@ from plotly.subplots import make_subplots
 from src.data import label_gee
 
 
-def plot_predicted_values(config_path: Text):
+def get_last_prediction_path(config, fs):
+    bucket_path = os.path.dirname(
+        config["evaluate"]["final_predictions_file"].format(
+            dt=date.today().strftime("%Y%m%d")
+        )
+    )
+    return "s3://" + np.sort([f for f in fs.ls(bucket_path) if "prediction" in f])[-1]
 
+
+def plot_predicted_values(config_path: Text):
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
     sheet_pred = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0"
     sheet_vigi = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=1074409459"
 
-    url_pred = sheet_pred.replace('/edit#gid=', '/export?format=csv&gid=')
-    url_vigi = sheet_vigi.replace('/edit#gid=', '/export?format=csv&gid=')
+    url_pred = sheet_pred.replace("/edit#gid=", "/export?format=csv&gid=")
+    url_vigi = sheet_vigi.replace("/edit#gid=", "/export?format=csv&gid=")
 
     pred = pd.read_csv(url_pred, encoding="latin1", decimal=",")
     ciano = pd.read_csv(url_vigi, encoding="latin1", decimal=",")
 
-    gee_plot = go.Scatter(x=pred["date"], y=pred["y_pred"], name="Predicted values", mode="markers")
+    gee_plot = go.Scatter(
+        x=pred["date"], y=pred["y_pred"], name="Predicted values", mode="markers"
+    )
 
     vigi_plot = go.Scatter(
         x=ciano["Data da coleta"], y=ciano["Resultado"], mode="markers", name="SISAGUA"

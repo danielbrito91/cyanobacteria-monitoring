@@ -6,7 +6,6 @@ import joblib
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
 
 from src.data import make_s2a_dataset
 
@@ -26,7 +25,6 @@ def cluster_gee(config: dict) -> pd.DataFrame:
 
 
 def hard_code_cluster(clusters_fts, config) -> pd.DataFrame:
-
     clusters_fts.loc[
         (
             pd.to_datetime(clusters_fts["date"]).dt.date.isin(
@@ -40,7 +38,6 @@ def hard_code_cluster(clusters_fts, config) -> pd.DataFrame:
 
 
 def split_data_cloud(clusters_fts: pd.DataFrame, clean_cluster: list):
-
     gee_train = clusters_fts.loc[
         pd.to_datetime(clusters_fts["date"]) <= pd.to_datetime("2021-07-01")
     ]
@@ -57,7 +54,6 @@ def split_data_cloud(clusters_fts: pd.DataFrame, clean_cluster: list):
 
 
 def train_cloud_classifier(X_train, y_train):
-
     clf = LogisticRegression()
     clf.fit(X_train, y_train)
 
@@ -125,6 +121,5 @@ def plot_img(data_examinada, config, n_days=7):
     ms = s2a_img.first().date().millis().getInfo()
 
     print(datetime.datetime.fromtimestamp(ms / 1000.0))
-
 
     return Map

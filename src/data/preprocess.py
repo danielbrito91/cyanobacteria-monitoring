@@ -7,7 +7,6 @@ from sklearn.preprocessing import PolynomialFeatures
 
 
 def oversampling(df_train, config):
-
     return smogn.smoter(
         data=df_train,
         y=config["featurize"]["target_column"],
@@ -44,6 +43,11 @@ def train_test_split_ts(
     df_train = df[pd.to_datetime(df["date"]) <= date_limit_test]
     df_test = df.loc[pd.to_datetime(df["date"]) > date_limit_test]
 
+    n_train = df_train.shape[0]
+    n_test = df_test.shape[0]
+
+    print(f"{n_test/ (n_train + n_test):.2%} dos dados utilizados para teste")
+
     return df_train, df_test
 
 
@@ -57,7 +61,6 @@ def create_delta_days(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_poly_features(df: pd.DataFrame, config: dict, labeled=True) -> pd.DataFrame:
-
     poly = PolynomialFeatures(
         degree=config["featurize"]["poly_degree"], include_bias=False
     )

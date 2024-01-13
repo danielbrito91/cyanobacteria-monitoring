@@ -2,19 +2,20 @@ import streamlit as st
 import pandas as pd
 import yaml
 import json
+import s3fs
 
-from src.report.plot_predicted_values import plot_predicted_values
+from src.report.plot_predicted_values import plot_predicted_values, get_last_prediction_path
 
 st.title("Cyanobacteria Monitoring - Guaíba Lake")
 
+fs = s3fs.S3FileSystem()
 
 with open("params.yaml") as config_file:
     config = yaml.safe_load(config_file)
 
-sheet_pred = "https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0"
-url_pred = sheet_pred.replace('/edit#gid=', '/export?format=csv&gid=')
+last_pred_path = get_last_prediction_path(config, fs)
 
-predicted_values = pred = pd.read_csv(url_pred, encoding="latin1", decimal=",")
+predicted_values = pd.read_parquet(fs.open(last_pred_path))
 last_value = predicted_values.tail(1)
 
 st.header("Last predicted value")

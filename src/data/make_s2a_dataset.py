@@ -1,6 +1,11 @@
+from typing import List
+
+import boto3
 import ee
 import pandas as pd
 import yaml
+
+from src.data import in_out
 
 ee.Initialize()
 
@@ -97,7 +102,7 @@ def mask_s2a_clouds(img):
         qa60.bitwiseAnd(cirrusBitMask).eq(0)
     )
 
-    img_reflectancia = img.multiply(0.0001)
+    img_reflectancia = img.divide(10_000)
 
     return (
         img_reflectancia.updateMask(mask)
@@ -127,8 +132,7 @@ def add_s2a_ndci_ndvi(img):
     return img_with_bands
 
 
-def gee_to_df(config_path):
-    """Cria DataFrame com dados de NDVI, NDCI e bandas do S2A para ponto escolhido"""
+def get_img_collection(config_path: str = "params.yaml"):
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
@@ -138,16 +142,21 @@ def gee_to_df(config_path):
 
     region = create_region(lat, lon, buffer_size)
 
-    s2a_amostragem = (
+    return (
         ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED")
         .filterBounds(region)
+        .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", 20))
         .map(mask_s2a_clouds)
         .map(lambda img: img.clip(region))
         .map(add_s2a_ndci_ndvi)
         .map(add_id_date)
     )
 
-    bands = [
+
+def get_df_from_img_collection(
+    img_collection,
+    config_path: str = "params.yaml",
+    bands: List[str] = [
         "NDVI",
         "NDCI",
         "B1",
@@ -162,11 +171,20 @@ def gee_to_df(config_path):
         "B9",
         "B11",
         "B12",
-    ]
+    ],
+):
+    """Cria DataFrame com dados de NDVI, NDCI e bandas do S2A para ponto escolhido
+
+    Refs:
+    https://worldbank.github.io/OpenNightLights/tutorials/mod6_3_intro_to_sentinel2.html
+    """
+
+    with open(config_path) as config_file:
+        config = yaml.safe_load(config_file)
 
     dfs = []
     for band in bands:
-        formated = create_df(s2a_amostragem, band)
+        formated = create_df(img_collection, band)
         dfs.append((band, formated))
 
     for count, df_tuple in enumerate(dfs):
@@ -176,3 +194,13 @@ def gee_to_df(config_path):
             df = pd.merge(df, df_tuple[1], on=["millis", "date"])
 
     return df
+
+
+if __name__ == "__main__":
+    s3_path = config["data_load"]["s2a_df"]
+    bucket, file_path = in_out.get_bucket_and_key_from_s3path(s3_path)
+    s3_resource = boto3.resource("s3")
+
+    s2a_collection = get_img_collection()
+    df_gee = get_df_from_img_collection(s2a_collection)
+    in_out.save_file_in_s3(df_gee, bucket, file_path, s3_resource)

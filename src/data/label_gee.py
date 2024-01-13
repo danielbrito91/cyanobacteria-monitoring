@@ -2,15 +2,16 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import s3fs
 
 
-def load_data(config):
+def load_data(config, fs: s3fs.S3FileSystem):
     nome_eta = config["data_create"]["nome_eta"]
 
-    gee_clean = pd.read_csv(config["gee_clean"]["clean_data_path"])
-    gee_clean["date"] = pd.to_datetime(gee_clean["date"]).dt.date
+    gee = pd.read_parquet(fs.open(config["data_load"]["s2a_df"]))
+    gee["date"] = pd.to_datetime(gee["date"]).dt.date
 
-    vigi = pd.read_csv(config["data_load"]["labels_df"])
+    vigi = pd.read_parquet(fs.open(config["data_load"]["labels_df"]))
 
     ciano_vigi = vigi.loc[
         (vigi["Parâmetro"] == "Cianobactérias")
@@ -20,7 +21,7 @@ def load_data(config):
     ]
 
     ciano_labels = ciano_vigi.loc[
-        pd.to_datetime(ciano_vigi["Data da coleta"]).dt.date >= min(gee_clean["date"])
+        pd.to_datetime(ciano_vigi["Data da coleta"]).dt.date >= min(gee["date"])
     ]
     ciano_labels.loc[:, "Data da coleta"] = pd.to_datetime(
         ciano_labels["Data da coleta"]
@@ -28,11 +29,10 @@ def load_data(config):
     ciano_labels.loc[:, "Resultado"] = pd.to_numeric(ciano_labels["Resultado"])
     ciano_labels = ciano_labels.sort_values(by=["Data da coleta"])
 
-    return gee_clean, ciano_labels
+    return gee, ciano_labels
 
 
 def get_intervals(date_column, first_date, config):
-
     delta_d = config["data_create"]["delta_dias"]
 
     j_inicio = pd.date_range(
@@ -54,17 +54,28 @@ def get_intervals(date_column, first_date, config):
     intervals = []
 
     for date_i in date_column:
-        interval_i = interval_df.loc[
-            (pd.to_datetime(interval_df["inicio"]) <= pd.to_datetime(date_i))
-            & (pd.to_datetime(interval_df["fim"]) >= pd.to_datetime(date_i)),
-            "interval",
+        interval_i = interval_df.query("(inicio <= @date_i) & (fim >= @date_i)")[
+            "interval"
         ]
 
         if len(interval_i) > 0:
             interval_i = interval_i.values[0]
         else:
-            print(date_i)
+            print(f"{date_i} nao encontrada")
 
         intervals.append(interval_i)
 
     return intervals
+
+
+def join_gee_labels(gee: pd.DataFrame, labels: pd.DataFrame, config: dict):
+    gee_date_dtype = str(gee.dtypes[["date"]].values[0])
+    if "datetime" in gee_date_dtype:
+        gee = gee.assign(date=lambda x: x["date"].dt.date)
+
+    gee["interval"] = get_intervals(gee["date"], min(gee["date"]), config)
+    labels["interval"] = get_intervals(
+        labels["Data da coleta"], min(gee["date"]), config
+    )
+
+    return pd.merge(gee, labels, on="interval")

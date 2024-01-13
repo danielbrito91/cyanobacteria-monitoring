@@ -4,8 +4,8 @@ base:
 
 data_create:
   # Parametros para criar o dataset
-  buffer_metros: 150
-  delta_dias: 2
+  buffer_metros: 20
+  delta_dias: 4
   latitude: -30.012175
   longitude: -51.215679
   nome_eta: "MOINHOS DE VENTO"
@@ -14,28 +14,9 @@ data_create:
   url: "https://sage.saude.gov.br/dados/sisagua/controle_mensal_demais_parametros.zip"
 
 data_load:
-  s2a_df: "data/raw/gee.csv"
-  labels_download: "data/raw/controle_mensal_demais_parametros.zip"
-  labels_df: "data/raw/vigi.csv"
-  labeled_df: "data/raw/labeled_data.csv"
-
-gee_clean:
-  train_new_clf: True
-  imgs_com_nuvens: [
-    "2019-06-17",
-    "2020-08-07",
-    "2020-12-28",
-    "2021-01-22",
-    "2022-01-19",
-    ]
-  kmeans:
-    n_clusters: 6
-    clean_cluster: [5]
-  classifier:
-    clf_name: logit
-    clf_path: "models/cloud_clf.joblib"
-    clf_performance: "reports/cloud_clf.json"
-  clean_data_path: "data/processed/gee_clouds.csv"
+  s2a_df: "s3://gee-guaiba/latitude=-30.012175, longitude=-51.215679, buffer=20/gee.gzip"
+  labels_df: "s3://vigiagua/vigi.gzip"
+  labeled_df: "s3://cyano-guaiba/data/labeled_data.gzip"
 
 featurize:
   target_column: "Resultado"
@@ -76,7 +57,7 @@ featurize:
     "NDCI_median B5_B4" ,
     "NDVI_median B5_B2"]
   poly_degree: 2
-  ft_data_path: "data/processed/df_fts.csv"
+  ft_data_path: "s3://cyano-guaiba/data/ft_data.gzip"
 
 data_split:
   trainset_path: "data/processed/train.csv"
@@ -87,7 +68,7 @@ mlflow_config:
   experiment_name: "change_days"
 
 train:
-  estimator_name: ridge
+  estimator_name: poisson_reg
   estimators:
     ridge:
       params:
@@ -107,11 +88,15 @@ train:
         min_samples_leaf: 1
         n_estimators: 615
         criterion: "absolute_error"
-  model_path: "models/model.joblib"
-  full_model_path: "models/full_model.joblib"
+    poisson_reg:
+      params:
+        max_iter: 10_000
+        alpha: .5
+  model_path: "s3://cyano-guaiba/model/model.joblib"
+  full_model_path: "s3://cyano-guaiba/model/full_model.joblib"
 
 evaluate:
-  metrics_file: "reports/metrics.json"
+  metrics_file: "reports/metrics_file.json"
   metrics_data: "reports/metrics.csv"
   predicted_vs_fitted_plot: "reports/predicted_vs_fitted_plot.png"
-  final_predictions_file: "data/predictions/predicted.csv"
+  final_predictions_file: "s3://cyano-guaiba/data/prediction_{dt}.gzip"

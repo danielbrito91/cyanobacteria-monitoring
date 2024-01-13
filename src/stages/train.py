@@ -1,64 +1,65 @@
 import argparse
 import json
-import tempfile
-from pathlib import Path
 from typing import Text
 
 import joblib
-import mlflow
 import pandas as pd
+import s3fs
 import yaml
+from sklearn.linear_model import PoissonRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_log_error
 
 from src.data import preprocess
-from src.train import train_model
 from src.utils.logs import get_logger
 
 
 def train(config_path: Text):
-    """Create MLFlow Experiment and save the trained model
-
-    Args:
-        config_path (Text): _description_
-    """
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
+
+    fs = s3fs.S3FileSystem()
 
     logger = get_logger("TRAIN", log_level=config["base"]["log_level"])
 
     # Load labeled data
-    df = pd.read_csv(config["data_load"]["labeled_df"])
+    logger.info("Load data")
+    df = pd.read_parquet(fs.open(config["featurize"]["ft_data_path"]))
 
-    # Train
-    mlflow.set_experiment(experiment_name=config["mlflow_config"]["experiment_name"])
-    with mlflow.start_run(run_name=config["train"]["estimator_name"]):
-        run_id = mlflow.active_run().info.run_id
-        logger.info(f"Run ID: {run_id}")
-        artifacts = train_model.train_model(df, config)
-        performance = artifacts["performance"]
-        logger.info(json.dumps(performance, indent=2))
+    logger.info("Split")
+    df_train, df_test = preprocess.train_test_split_ts(df, config)
 
-        # Log metrics and parameters
-        mlflow.log_metrics({"mae": performance["mae"]})
-        mlflow.log_metrics({"mlse": performance["mlse"]})
-        mlflow.log_params(artifacts["params"])
+    features = config["featurize"]["selected_features"]
 
-        # Log artifacts
-        with tempfile.TemporaryDirectory() as dp:
-            joblib.dump(artifacts["model"], Path(dp, "model.pkl"))
-            train_model.save_dict(
-                artifacts["performance"], Path(dp, "performance.json")
-            )
-           # artifacts["pred_vs_true_plot"].write_image(
-           #Path(dp, "pred_vs_true_plot.png")
-           #)
-            mlflow.log_artifacts(dp)
+    X_train = df_train[features]
+    X_test = df_test[features]
+    y_train = df_train[config["featurize"]["target_column"]]
+    y_test = df_test[config["featurize"]["target_column"]]
 
+    logger.info("Train")
+    selected_model = config["train"]["estimator_name"]
+    if selected_model == "poisson_reg":
+        params = config["train"]["estimators"][selected_model]["params"]
+        model = PoissonRegressor(**params)
+
+    model.fit(X_train, y_train)
+
+    logger.info("Evaluate")
+    y_pred = model.predict(X_test)
+    mae = mean_absolute_error(y_test, y_pred)
+    mlse = mean_squared_log_error(y_test, y_pred)
+
+    with open("reports/metrics_file.json", "w") as f:
+        json.dump({"mae": mae, "mlse": mlse}, f)
+
+    # Write
     logger.info("Save model")
-    joblib.dump(artifacts["model"], config["train"]["model_path"])
+    model_path = config["train"]["model_path"]
+    fs = s3fs.S3FileSystem()
+    with fs.open(model_path, "wb") as f:
+        joblib.dump(model, f)
 
 
 if __name__ == "__main__":
-
     args_parser = argparse.ArgumentParser()
     args_parser.add_argument("--config", dest="config", required=True)
     args = args_parser.parse_args()

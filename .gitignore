@@ -21,3 +21,9 @@ data/.
 /data
 
 config/service-account.json
+
+notebooks/dob-s3.ipynb
+
+.streamlit/secrets.toml
+
+.DS_Store

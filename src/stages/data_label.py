@@ -2,20 +2,21 @@ import argparse
 from typing import Text
 
 import pandas as pd
+import s3fs
 import yaml
 
-from src.data import label_gee, preprocess
+from src.data import label_gee
 from src.utils.logs import get_logger
 
 
 def data_label(config_path: Text) -> None:
-
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
 
     logger = get_logger("DATA_LABEL", log_level=config["base"]["log_level"])
 
-    gee, ciano_labels = label_gee.load_data(config)
+    fs = s3fs.S3FileSystem()
+    gee, ciano_labels = label_gee.load_data(config, fs)
     gee["interval"] = label_gee.get_intervals(gee["date"], min(gee["date"]), config)
 
     logger.info(
@@ -39,7 +40,6 @@ def data_label(config_path: Text) -> None:
 
 
 if __name__ == "__main__":
-
     args_parser = argparse.ArgumentParser()
     args_parser.add_argument("--config", dest="config", required=True)
     args = args_parser.parse_args()

@@ -1,18 +1,31 @@
 import argparse
+import os
+from datetime import date
 from typing import Text
 
+import boto3
 import joblib
 import numpy as np
 import pandas as pd
+import s3fs
 import yaml
 
-from src.data import preprocess, label_gee
+from src.data import in_out, label_gee, preprocess
 from src.utils.logs import get_logger
 
-import gspread as gs
-from gspread_dataframe import set_with_dataframe
+
+def get_last_prediction_path(config, fs):
+    bucket_path = os.path.dirname(
+        config["evaluate"]["final_predictions_file"].format(
+            dt=date.today().strftime("%Y%m%d")
+        )
+    )
+    return "s3://" + np.sort([f for f in fs.ls(bucket_path) if "prediction" in f])[-1]
+
 
 def predict_cyano(config_path: Text) -> None:
+    fs = s3fs.S3FileSystem()
+    s3_resource = boto3.resource("s3")
 
     with open(config_path) as config_file:
         config = yaml.safe_load(config_file)
@@ -21,15 +34,18 @@ def predict_cyano(config_path: Text) -> None:
 
     logger.info("Load model")
     model_path = config["train"]["full_model_path"]
-    model = joblib.load(model_path)
+    with fs.open(model_path, "rb") as f:
+        model = joblib.load(f)
 
     logger.info("Load S2A dataset")
-    gee = pd.read_csv(config["gee_clean"]["clean_data_path"])
+    gee = pd.read_parquet(fs.open(config["data_load"]["s2a_df"]))
 
     logger.info("Create features")
-    gee_fts = preprocess.create_ratios(gee)
-    gee_fts["delta_days"] = 0
-    gee_fts = preprocess.create_poly_features(gee_fts, config, labeled=False)
+    gee_fts = (
+        gee.pipe(preprocess.create_ratios)
+        .assign(delta_days=0)
+        .pipe(preprocess.create_poly_features, labeled=False, config=config)
+    )
 
     id = gee_fts["date"]
 
@@ -43,38 +59,13 @@ def predict_cyano(config_path: Text) -> None:
     df_predicted = pd.DataFrame({"date": id, "y_pred": y_pred})
 
     logger.info("Save predicted data")
-    df_predicted.to_csv(config["evaluate"]["final_predictions_file"], index=False)
+    today_ = date.today().strftime("%Y%m%d")
+    s3_path = config["evaluate"]["final_predictions_file"].format(dt=today_)
+    bucket, key = in_out.get_bucket_and_key_from_s3path(s3_path)
+    in_out.save_file_in_s3(df_predicted, bucket, key, s3_resource)
 
-    logger.info("Export predictions to Google Sheets")
-
-    gc = gs.service_account(filename="config/service-account.json")
-    _, ciano = label_gee.load_data(config)
-
-    sh_pred = gc.open_by_url("https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=0")
-    sh_ciano = gc.open_by_url("https://docs.google.com/spreadsheets/d/1HL9PO6TMQRHW3Z641zERfDRrscGpgXUf6ErpMOEUVLc/edit#gid=1074409459")
-    
-    ws_pred = sh.worksheet("previsto")
-    ws_ciano = sh.worksheet("vigi")
-
-    ws_pred.clear()
-    ws_ciano.clear()
-
-    set_with_dataframe(
-        worksheet=ws_pred,
-        dataframe=df_predicted,
-        include_index=False,
-        include_column_header=True,
-        resize=True)
-    
-    set_with_dataframe(
-        worksheet=ws_ciano,
-        dataframe=ciano,
-        include_index=False,
-        include_column_header=True,
-        resize=True)
 
 if __name__ == "__main__":
-
     args_parser = argparse.ArgumentParser()
     args_parser.add_argument("--config", dest="config", required=True)
     args = args_parser.parse_args()
