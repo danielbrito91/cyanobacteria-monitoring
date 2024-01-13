@@ -16,3 +16,4 @@ xgboost==1.6.2
 PyYAML==6.0
 s3fs==2023.12.2
 altair<5
+st-files-connection
