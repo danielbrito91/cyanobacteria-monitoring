@@ -5,7 +5,7 @@ import pandas as pd
 import s3fs
 import yaml
 
-from src.data import label_gee
+from src.data import label_gee, preprocess
 from src.utils.logs import get_logger
 
 

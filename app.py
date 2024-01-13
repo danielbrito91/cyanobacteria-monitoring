@@ -4,6 +4,7 @@ import yaml
 import json
 import s3fs
 
+from src.data import label_gee
 from src.report.plot_predicted_values import plot_predicted_values, get_last_prediction_path
 
 st.title("Cyanobacteria Monitoring - Guaíba Lake")
@@ -16,6 +17,7 @@ with open("params.yaml") as config_file:
 last_pred_path = get_last_prediction_path(config, fs)
 
 predicted_values = pd.read_parquet(fs.open(last_pred_path))
+_, ciano = label_gee.load_data(config, fs)
 last_value = predicted_values.tail(1)
 
 st.header("Last predicted value")
@@ -25,7 +27,7 @@ st.markdown(
     """
 )
 
-fig = plot_predicted_values("params.yaml")
+fig = plot_predicted_values(predicted_values, ciano, config)
 st.plotly_chart(fig, use_container_width=True)
 
 

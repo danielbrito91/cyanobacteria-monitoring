@@ -15,13 +15,8 @@ from src.utils.logs import get_logger
 
 
 def get_last_prediction_path(config, fs):
-    bucket_path = os.path.dirname(
-        config["evaluate"]["final_predictions_file"].format(
-            dt=date.today().strftime("%Y%m%d")
-        )
-    )
+    bucket_path = os.path.dirname(config["evaluate"]["final_predictions_file"].format(dt=date.today().strftime("%Y%m%d")))
     return "s3://" + np.sort([f for f in fs.ls(bucket_path) if "prediction" in f])[-1]
-
 
 def predict_cyano(config_path: Text) -> None:
     fs = s3fs.S3FileSystem()
@@ -61,7 +56,9 @@ def predict_cyano(config_path: Text) -> None:
     logger.info("Save predicted data")
     today_ = date.today().strftime("%Y%m%d")
     s3_path = config["evaluate"]["final_predictions_file"].format(dt=today_)
-    bucket, key = in_out.get_bucket_and_key_from_s3path(s3_path)
+    bucket, key = in_out.get_bucket_and_key_from_s3path(
+        s3_path
+    )
     in_out.save_file_in_s3(df_predicted, bucket, key, s3_resource)
 
 
