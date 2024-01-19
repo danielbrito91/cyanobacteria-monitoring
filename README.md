@@ -32,11 +32,6 @@ O sistema calcula o índice NDVI (Normalized Difference Vegetation Index) e NDCI
 
 Você poderá acessar o código fonte do projeto que foi organizado aos moldes do [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/) com algumas pequenas adaptações.
 
-Para se realizar análise da série histórica das concentrações de cianobactérias, você deverá:
-1. Criar série histórica de NDVI e NDCI a partir de `notebooks/dob-criando-dataset.ipynb`
-2. Estimar densidade de cianobactérias (número total de organismos) a partir do modelo `models/xgbr.pkl` usando `src/models/predict_model.py`
-3. Realizar as análises de séries temporais constantes em `analises_series_temporais.R`
-
 ## Tecnologias utilizadas
 
 - ``Python``
@@ -44,10 +39,8 @@ Para se realizar análise da série histórica das concentrações de cianobact�
     - ``Pandas``
     - ``plotly``
     - ``Scikit-learn``
-    - ``XGBoost``
     - ``Streamlit``
  
-- ``DVC``
 - ``AWS S3``
 
 As seguintes bases de dados foram utilizadas no projeto:
