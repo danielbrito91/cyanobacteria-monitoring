@@ -203,4 +203,5 @@ if __name__ == "__main__":
 
     s2a_collection = get_img_collection()
     df_gee = get_df_from_img_collection(s2a_collection)
+    print("Save")
     in_out.save_file_in_s3(df_gee, bucket, file_path, s3_resource)

@@ -1,56 +1,83 @@
-# Monitoramento de cianobactérias no Lago Guaíba
+# Guaíba Lake Cyanobacteria Monitoring: A Data-Driven Approach
 
-![Desenvolvido em Python](https://img.shields.io/badge/-python-brightgreen)
+![Python](https://img.shields.io/badge/-python-brightgreen)
 ![GEE](https://img.shields.io/badge/-GEE-brightgreen)
-![XGBoost](https://img.shields.io/badge/-XGBoost-brightgreen)
 ![Scikit-learn](https://img.shields.io/badge/-Scikit--learn-brightgreen)
 
-## Índice
+## Overview
 
-* [Índice](#índice)
-* [Descrição do Projeto](#descrição-do-projeto)
-* [Acesso ao projeto](#acesso-ao-projeto)
-* [Tecnologias utilizadas](#tecnologias-utilizadas)
-* [Referências](#referências)
+This project, undertaken during mentorship at [Alforriah](https://www.alforriah.com/), focuses on leveraging data science techniques to monitor cyanobacteria in [Lake Guaíba](https://en.wikipedia.org/wiki/Gua%C3%ADba_(water_body)), considering its significant implications for both health and the economy.
 
-Projeto desenvolvido na primeira etapa da mentoria [Alforriah](https://www.alforriah.com/).
+## Project description
 
-Disponível em https://danielbrito91-cyanobacteria-monitoring-app-q9d98u.streamlit.app/.
+### Problem
+Cyanobacteria, commonly known as "blue-green algae," can excessively proliferate in reservoirs and water bodies, especially those with a stagnant water regime, in a phenomenon known as algal blooms. These events can result in negative economic and health impacts<sup>[1](#references)</sup>. With global warming, an increase in the frequency and intensity of these events is expected<sup>[2](#references)</sup>. The increase in water quality monitoring data has the potential to assist the public and decision-makers in understanding the state of water resources in the face of this problem.
 
-## Descrição do Projeto
-### Problema
-As cianobactérias, popularmente conhecidas como "algas azuis", podem se proliferar de modo excessivo em reservatórios e corpos hídricos, especialmente aqueles locais com um regime lêntico, em um fenômeno conhecido como florações ("blooms") de algas. Esses eventos podem resultar em impactos ecônomicos e sanitários negativos<sup>[1](#referências)</sup>. Espera-se que, com o aquecimento global, ocorra um aumento na frequência e intensidade desses eventos<sup>[2](#referências)</sup>. O aumento das fontes de dados sobre de monitoramento de qualidade da água tem potencial de auxiliar o conhecimento da população e tomadores de decisão sobre o estado dos recursos hídricos frente a esse problema.
+### Proposal
+The goal of this project is to extract a historical series of cyanobacteria density from surface water resources through the analysis of satellite images. The chosen study area was Lake Guaíba, a vital water source for Porto Alegre, Rio Grande do Sul.
 
-### Proposta
-O objetivo deste trabalho foi se extrair uma série histórica de densidade de cianobactérias de recurso hídrico superficial a partir da análise de imagens de satélite. A área de estudo escolhida foi o Lago Guaíba, manancial da cidade de Porto Alegre, capital do Rio Grande do Sul.
+### Implementation
 
-### Implementação
-O sistema calcula o índice NDVI (Normalized Difference Vegetation Index) e NDCI (Normalized Difference Chlorophyll Index) para o Lago Guaíba e os utiliza como preditores em uma regressão para se estimar as densidades de cianobactérias obtidas no monitoramento da qualidade da água realizado pelo setor de saúde (SISAGUA). Especificamente, foi realizada a análise de um dos pontos de captação da cidade (próximo ao par de coordenadas -30.012175, -51.215679). Trata-se de uma metodologia já adotada em alguns trabalhos<sup>[3, 4, 5](#referências)</sup>, especialmente para monitoramento de clorofila-a.
+![Alt text](docs/project_overview.jpg "Project Overview")
 
+The system extracts [Sentinel 2A data from Google Earth Engine](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2)  and calculates the NDVI (Normalized Difference Vegetation Index) and NDCI (Normalized Difference Chlorophyll Index) for Lake Guaíba, using them as predictors in a regression to estimate cyanobacteria densities obtained from [water quality monitoring conducted by the health sector (SISAGUA)](https://dados.gov.br/dataset/sisagua-controle-mensal-resultado-de-analises). Specifically, the analysis was performed at one of the city's intake points (near the coordinates -30.012175, -51.215679). This methodology has been adopted in some studies<sup>[3, 4, 5](#references)</sup>, especially for chlorophyll-a monitoring.
 
-## Acesso ao projeto
+Data updates occur weekly for Sentinel 2A and monthly for water quality monitoring. Weekly batch inference is performed to estimate cyanobacteria density at the specified monitoring point.
 
-Você poderá acessar o código fonte do projeto que foi organizado aos moldes do [Cookiecutter Data Science](https://drivendata.github.io/cookiecutter-data-science/) com algumas pequenas adaptações.
+## How to reproduce it
+### Setting the environment
 
-## Tecnologias utilizadas
+- Authenticate with your Google and AWS account
 
-- ``Python``
-    - ``Google Earth Engine``
-    - ``Pandas``
-    - ``plotly``
-    - ``Scikit-learn``
-    - ``Streamlit``
- 
-- ``AWS S3``
+### Training pipeline
+1. Extract data from SISAGUA using the Glue Job at `src/glue_jobs/vigi_to_s3.py`
+2. Extract data from Google Earth Engine
+```bash
+python3 src/data/make_s2a_dataset.py
+```
+3. Create a labeled dataset
+```bash
+python3 src/stages/data_label.py --config="params.yaml"
+```
 
-As seguintes bases de dados foram utilizadas no projeto:
+4. Feature engineering
+```bash
+python3 src/stages/feat_eng.py --config="params.yaml"
+```
 
-- Série histórica Sentila-2A obtida no Google Earth Engine (European Space Agency): https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2
+5. Training and evaluation
+```bash
+python3 src/stages/train.py --config="params.yaml"
+```
 
-- SISAGUA (Ministério da Saúde): https://dados.gov.br/dataset/sisagua-controle-mensal-resultado-de-analises
+6. Training the selected model with the full dataset.
+```bash
+python3 src/stages/train_full_data.py --config="params.yaml"
+```
 
+7. Predicting new data
+```bash
+python3 src/stages/train_full_data.py --config="params.yaml"
+```
 
-## Referências
+### Inference pipeline
+1. Extract data from SISAGUA using the Glue Job at `src/glue_jobs/vigi_to_s3.py`
+2. Extract data from Google Earth Engine (via crontab)
+```bash
+python3 src/data/make_s2a_dataset.py
+```
+3. Inference
+    - Locally:
+    ```bash
+    python3 src/data/make_s2a_dataset.py
+    ```
+    - Cloud: running Glue Job at `src/glue_jobs/predict_cyano.py`
+4. Deploy it on Streamlit
+```bash
+streamlit run app.py
+```
+
+## References
 
 [1] CETESB. Manual de cianobactérias planctônicas : legislação, orientações para o monitoramento e aspectos ambientais. 2013. https://cetesb.sp.gov.br/laboratorios/wp-content/uploads/sites/24/2015/01/manual-cianobacterias-2013.pdf
 

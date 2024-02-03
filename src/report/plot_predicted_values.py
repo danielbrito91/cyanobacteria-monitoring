@@ -7,6 +7,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import yaml
 from plotly.subplots import make_subplots
+from scipy.interpolate import Rbf
 
 
 def get_last_prediction_path(config, fs):
@@ -18,10 +19,18 @@ def get_last_prediction_path(config, fs):
     return "s3://" + np.sort([f for f in fs.ls(bucket_path) if "prediction" in f])[-1]
 
 
-def plot_predicted_values(pred: pd.DataFrame, ciano: pd.DataFrame, config: dict):
+def smooth_predicted_values(pred: pd.DataFrame, smooth: int = 2) -> pd.DataFrame:
+    rbf = Rbf(pred["date"], pred["y_pred"], smooth=smooth)
 
+    dias = pd.date_range(pred["date"].min(), pred["date"].max(), freq="1d")
+
+    return pd.DataFrame(dict(date=dias, y=rbf(dias)))
+
+
+def plot_predicted_values(pred: pd.DataFrame, ciano: pd.DataFrame, config: dict):
+    smoothed_df = smooth_predicted_values(pred)
     gee_plot = go.Scatter(
-        x=pred["date"], y=pred["y_pred"], name="Predicted values", mode="markers"
+        x=smoothed_df["date"], y=smoothed_df["y"], name="Predicted values (RBF smooth)", mode="lines"
     )
 
     vigi_plot = go.Scatter(
