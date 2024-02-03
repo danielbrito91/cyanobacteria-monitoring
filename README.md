@@ -6,7 +6,7 @@
 
 ## Overview
 
-This project, undertaken during mentorship at [Alforriah](https://www.alforriah.com/), focuses on leveraging data science techniques to monitor cyanobacteria in [Lake Guaíba](https://en.wikipedia.org/wiki/Gua%C3%ADba_(water_body)), considering its significant implications for both health and the economy.
+This project, undertaken during mentorship at [Alforriah](https://www.alforriah.com/), focuses on leveraging data science techniques to monitor cyanobacteria in [Lake Guaíba](https://en.wikipedia.org/wiki/Gua%C3%ADba_(water_body)), considering its significant implications for both health and the economy. The model is deployed on [Streamlit](https://danielbrito91-cyanobacteria-monitoring-app-q9d98u.streamlit.app/).
 
 ## Project description
 
